@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build output
+dist/
+build/
+.output/
+.vinxi/
+target/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test
+coverage/
+
+# Rust
+target/
+*.pdb
+
+# Cache
+.swc/
+.turbo/
+.cache/
+
+# Project docs (local only)
+ARCHITECTURE.md
+CLAUDE.md

@@ -1,0 +1,11 @@
+{
+  "name": "kotov",
+  "version": "0.0.0",
+  "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "esbuild"
+    ]
+  }
+}

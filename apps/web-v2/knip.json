@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/main.tsx"],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["src/env.d.ts", "**/*.css.ts"],
+  "ignoreDependencies": [
+    "@vanilla-extract/webpack-plugin",
+    "mini-css-extract-plugin",
+    "style-loader",
+    "css-loader",
+    "postcss-loader",
+    "postcss"
+  ]
+}
