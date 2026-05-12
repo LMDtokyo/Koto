@@ -1,0 +1,28 @@
+{
+  "name": "tauri-koto",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "launcher": "tauri dev"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.0",
+    "lucide-react": "^1.14.0",
+    "nanostores": "^0.11.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "~5.7.2",
+    "vite": "^6.3.5"
+  }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FileProvider paths for camera capture.
+    Temp avatar photos are written to the app's private cache dir
+    and shared only with the camera app via a content:// URI.
+-->
+<paths>
+    <cache-path name="avatar_cache" path="." />
+</paths>

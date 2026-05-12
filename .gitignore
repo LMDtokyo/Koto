@@ -1,0 +1,71 @@
+# Env
+.env
+*.env
+
+# Go build artifacts
+bin/
+dist/
+*.exe
+*.test
+*.out
+
+# Go coverage
+coverage.html
+coverage.out
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Generated proto code (commit or exclude — your choice)
+# pkg/proto/gen/
+
+# Docker override
+docker-compose.override.yml
+
+# TLS certs (dev)
+*.pem
+*.key
+*.crt
+*.p8
+
+# Temporary
+tmp/
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/.kotlin/
+android/local.properties
+
+# Desktop (Compose Multiplatform)
+desktop/app/build/
+desktop/ui/build/
+desktop/data/build/
+desktop/domain/build/
+desktop/.gradle/
+desktop/.kotlin/
+
+# Rust build
+crypto/target/
+tauri-koto/src-tauri/target/
+**/target/
+
+# Node
+node_modules/
+**/node_modules/
+
+# Build outputs
+build/
+**/build/
+
+# Claude internal
+.claude/
+.luna/

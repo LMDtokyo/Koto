@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+description: Дополнение к глобальным правилам — только монорепо Koto (Go + Android + tauri-koto).
+---
+
+## Монорепо Koto
+
+- Соблюдай **GSD / `CLAUDE.md`** в корне репозитория, если пользователь не просил явно обойти процесс.
+
+## Где что лежит
+
+- **Go backend:** `services/`, `pkg/`, gateway — слои и стиль как в существующих сервисах; **E2EE**: сервер хранит ciphertext, не логируй plaintext сообщений.
+- **Десктоп UI:** `tauri-koto/` — Vite, React + TypeScript (`src/ui/`, `src/app/`, `src/features/`, `src/shared/`, `src/chrome/`), `src/styles/tokens.css`. **Эталон переноса UI с десктопа** — модуль **`desktop/`** (Compose), см. [`tauri-koto/DESKTOP_PORT.md`](tauri-koto/DESKTOP_PORT.md); **`android/`** для этого не использовать.
+- **Android:** `android/` — Kotlin, Compose, Hilt, Room; версии — `android/gradle/libs.versions.toml`.
+
+## Субагенты и ревью
+
+- Опасные зоны (HTTP/WS/auth/SQL-CQL/Redis/медиа/крипто) — после крупных правок предлагай **`/security-reviewer`**.
+- Сомнения по UI в этом репо — **`/frontend-specialist`**; по Go-стеку — **`/backend-specialist`** (см. также глобальные `~/.cursor/agents/`).
+
+Глобальные правила (`~/.cursor/rules/agent-standards.mdc`), MCP и `permissions.json` действуют во **всех** проектах; этот файл только уточняет структуру **Koto**.
+
+## Локальный стек и автономное выполнение
+
+- При запросах «подними бэкенд / почини стек / миграции» агент **сам** выполняет команды в терминале (Docker, `make`, `curl`), а не заменяет это чеклистом для пользователя.
+- После первого `docker compose up` в этом репозитории схема БД не создаётся сама: используйте **`make stack`** в корне (подъём compose → ожидание Postgres и Scylla → **`make migrate`** → **`make stack-health`**, при сбое — перезапуск `auth`/`gateway`) или минимум `make migrate`, если контейнеры уже запущены.

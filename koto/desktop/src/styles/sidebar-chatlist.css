@@ -1,0 +1,1954 @@
+/* Telegram-style: узкий rail папок + список чатов */
+
+.chatlist-sidebar {
+  background: var(--color-bg);
+  min-height: 0;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+/* ── Folders rail (как «вкладки папок слева» в Telegram Desktop) ── */
+.sidebar-rail {
+  width: var(--sidebar-rail-width);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-5) 0 var(--space-5);
+  gap: var(--space-4);
+  background: color-mix(in srgb, var(--color-bg) 92%, #000);
+  border-right: 1px solid var(--color-separator);
+}
+
+.sidebar-rail__brand {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: transparent;
+}
+
+.sidebar-rail__brand-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--color-accent) 32%, transparent));
+}
+
+.sidebar-rail__cluster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  padding-top: var(--space-3);
+}
+
+.sidebar-rail__spacer {
+  flex: 1;
+  min-height: var(--space-6);
+}
+
+/* Folder-style rail buttons: vertical tab with text label slot */
+.sidebar-rail__btn {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.12s ease;
+}
+
+.sidebar-rail__btn::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 0 3px 3px 0;
+  background: var(--color-accent);
+  transform: translateY(-50%);
+  transition: height 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar-rail__btn:hover {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-text);
+}
+
+.sidebar-rail__btn:active {
+  transform: scale(0.96);
+}
+
+/* «Compose» — primary действие, аккуратнее, без жирного градиента */
+.sidebar-rail__btn--primary {
+  background: transparent;
+  color: var(--color-accent-soft);
+}
+
+.sidebar-rail__btn--primary:hover {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-text);
+}
+
+.sidebar-rail__btn--primary::before {
+  display: none;
+}
+
+.sidebar-rail__btn--active:not(.sidebar-rail__btn--primary) {
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  color: var(--color-text);
+}
+
+.sidebar-rail__btn--active:not(.sidebar-rail__btn--primary)::before {
+  height: 26px;
+}
+
+/* ── Rail account button (внизу rail; click → popover-меню в духе TG Desktop) ── */
+.rail-account-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin-top: var(--space-2);
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s ease;
+}
+
+.rail-account-btn:hover {
+  transform: scale(1.05);
+}
+
+.rail-account-btn:active {
+  transform: scale(0.96);
+}
+
+.rail-account-btn[aria-expanded="true"] {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 55%, transparent);
+}
+
+.rail-account-btn__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--color-accent);
+}
+
+.rail-account-btn__dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 11px;
+  height: 11px;
+  margin: 0;
+  border: 2px solid var(--color-bg);
+  box-shadow: none;
+  pointer-events: none;
+}
+
+/* ── Account popover (выезжает из rail) ── */
+.rail-account-popover {
+  position: absolute;
+  left: calc(var(--sidebar-rail-width) + 6px);
+  bottom: var(--space-5);
+  z-index: 50;
+  width: 232px;
+  padding: 6px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-elevated) 96%, var(--color-bg));
+  border: 1px solid var(--color-separator);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-text) 4%, transparent),
+    0 14px 36px rgba(0, 0, 0, 0.45),
+    0 4px 10px rgba(0, 0, 0, 0.28);
+  transform-origin: bottom left;
+  animation: rail-account-popover-in 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes rail-account-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.rail-account-popover[hidden] {
+  display: none !important;
+}
+
+.rail-account-popover__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 12px;
+}
+
+.rail-account-popover__header--btn {
+  width: 100%;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 9px;
+  padding: 10px 12px;
+  transition: background 0.14s ease;
+}
+
+.rail-account-popover__header--btn:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.rail-account-popover__header--btn:active {
+  background: color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.rail-account-popover__chev {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-text-tertiary);
+  transition: color 0.14s ease, transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rail-account-popover__header--btn:hover .rail-account-popover__chev {
+  color: var(--color-accent-soft);
+  transform: translateX(2px);
+}
+
+.rail-account-popover__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--color-accent);
+}
+
+.rail-account-popover__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rail-account-popover__name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail-account-popover__sub {
+  font-size: 11.5px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail-account-popover__divider {
+  height: 1px;
+  margin: 4px 4px;
+  background: var(--color-separator);
+}
+
+.rail-account-popover__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.rail-account-popover__row:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.rail-account-popover__row:active {
+  background: color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.rail-account-popover__row--danger {
+  color: var(--color-error);
+}
+
+.rail-account-popover__row--danger:hover {
+  background: color-mix(in srgb, var(--color-error) 14%, transparent);
+}
+
+.rail-account-popover__row-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.rail-account-popover__row--danger .rail-account-popover__row-ic {
+  color: var(--color-error);
+}
+
+.sidebar-rail__btn svg {
+  flex-shrink: 0;
+}
+
+.sidebar-rail__btn--settings-back {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  padding: 0;
+}
+
+.sidebar-rail__btn--settings-back[hidden] {
+  display: none !important;
+}
+
+.sidebar-rail__user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--color-accent);
+}
+
+.sidebar-rail .sidebar-rail__btn--settings-back:not([hidden]) {
+  display: inline-flex;
+}
+
+/* Основная колонка списка */
+.sidebar-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.chatlist-top {
+  flex-shrink: 0;
+}
+
+.chatlist-top[hidden],
+.chatlist-scroll[hidden] {
+  display: none !important;
+}
+
+/* Верхняя панель: заголовок «Чаты» + счётчик новых */
+.chatlist-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-7) var(--space-5);
+}
+
+.chatlist-toolbar .chatlist-brand-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.chatlist-toolbar__brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.chatlist-toolbar__action {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  transition: background 0.14s ease, color 0.14s ease, transform 0.12s ease;
+}
+
+.chatlist-toolbar__action:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text);
+}
+
+.chatlist-toolbar__action:active {
+  transform: scale(0.94);
+}
+
+.chatlist-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chatlist-section {
+  list-style: none;
+  padding: 6px 14px 2px;
+}
+
+.chatlist-section__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.chatlist-icon-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  opacity: 0.55;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chatlist-icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.chatlist-icon-btn--live {
+  opacity: 1;
+  cursor: pointer;
+  color: var(--color-text);
+}
+
+.chatlist-icon-btn--live:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-accent);
+}
+
+.chatlist-brand-title {
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  color: var(--color-text);
+  flex-shrink: 0;
+}
+
+.chatlist-brand-unread {
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+/* Скролл только список + архив + hint */
+.chatlist-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-2);
+}
+
+/* Settings mode in sidebar (Discord-style channel/settings list) */
+.chatlist-settings-nav {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  border-top: 1px solid var(--color-separator);
+  animation: koto-settings-nav-fade-in 180ms ease;
+}
+
+.sidebar-main--settings-mode .chatlist-top,
+.sidebar-main--settings-mode .chatlist-scroll,
+.sidebar-main--settings-mode .chatlist-userbar {
+  display: none;
+}
+
+.sidebar-main--settings-mode .chatlist-settings-nav {
+  display: flex;
+  min-height: 100%;
+}
+
+/* Режим «Друзья»: список чатов гарантированно скрыт, колонка друзей — основная */
+.sidebar-main--friends-mode:not(.sidebar-main--settings-mode) .friends-sidebar-stack {
+  border-top: none;
+  padding-top: var(--space-1);
+}
+
+.sidebar-main--friends-mode .chatlist-hint {
+  display: none !important;
+}
+
+@keyframes koto-settings-nav-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chatlist-settings-nav__head {
+  padding: var(--space-6) var(--space-8) var(--space-4);
+}
+
+.chatlist-settings-nav__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 760;
+  color: var(--color-text);
+}
+
+.chatlist-settings-nav__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--space-5) var(--space-6);
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 3px;
+}
+
+.chatlist-settings-nav__item {
+  width: 100%;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  text-align: left;
+  padding: 10px 11px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+
+.chatlist-settings-nav__item:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  color: var(--color-text);
+}
+
+.chatlist-settings-nav__item:active {
+  transform: scale(0.992);
+}
+
+.chatlist-settings-nav__item--active {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-accent) 16%, var(--color-surface));
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.chatlist-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-3) var(--space-7) var(--space-6);
+  padding: 0 var(--space-6);
+  height: 44px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  transition: background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.chatlist-search:focus-within {
+  background: var(--color-elevated);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 38%, transparent);
+}
+
+.chatlist-search__icon {
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  transition: color 0.16s ease;
+}
+
+.chatlist-search:focus-within .chatlist-search__icon {
+  color: var(--color-accent-soft);
+}
+
+.chatlist-search__icon svg {
+  display: block;
+}
+
+.chatlist-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  line-height: 20px;
+  letter-spacing: -0.005em;
+  outline: none;
+}
+
+.chatlist-search input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Pill-табы (Telegram Desktop 2026): активный — accent fill, неактивный — прозрачный.
+   Все 4 таба умещаются в ширину колонки 320px без скролла. */
+.chatlist-tabs {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: var(--space-4) var(--space-5) var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.chatlist-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.chatlist-tab {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 11px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 16px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text-secondary);
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.chatlist-tab:hover:not(.chatlist-tab--active):not(:disabled) {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text);
+}
+
+.chatlist-tab--active {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--color-accent) 28%, transparent);
+}
+
+.chatlist-tab:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.chatlist-tab:disabled:hover {
+  filter: none;
+  background: transparent;
+}
+
+/* Inline counter — pill, размер согласован с тип-токенами */
+.chatlist-tab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  background: color-mix(in srgb, var(--color-accent) 92%, transparent);
+  color: var(--color-on-accent);
+}
+
+.chatlist-tab--active .chatlist-tab__count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.chatlist-tab__count[hidden] {
+  display: none !important;
+}
+
+.chatlist-tab:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  filter: none;
+}
+
+.chatlist-tab:disabled:hover {
+  filter: none;
+}
+
+/* Баннер сети (как offline / reconnect в Telegram) */
+.chatlist-connectivity-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 var(--space-6) var(--space-4);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-bg));
+  border: 1px solid var(--color-separator);
+}
+
+.chatlist-connectivity-banner[hidden] {
+  display: none !important;
+}
+
+.chatlist-connectivity-banner--warn {
+  color: var(--color-text);
+  background: color-mix(in srgb, #f0b429 14%, var(--color-surface));
+  border-color: color-mix(in srgb, #f0b429 35%, transparent);
+}
+
+.chatlist-connectivity-banner--error {
+  color: var(--color-text);
+  background: color-mix(in srgb, #e85454 12%, var(--color-surface));
+  border-color: color-mix(in srgb, #e85454 28%, transparent);
+}
+
+.chatlist-connectivity-banner__msg {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.chatlist-connectivity-banner__retry {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-on-accent);
+  background: var(--gradient-accent);
+}
+
+.chatlist-connectivity-banner__retry:hover {
+  filter: brightness(1.06);
+}
+
+.chatlist-connectivity-banner__retry[hidden] {
+  display: none !important;
+}
+
+/* MessageRequests-баннер: ровно как conversation row, accent-circle вместо аватара */
+.chatlist-requests-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 64px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease;
+}
+
+.chatlist-requests-banner:hover {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.chatlist-requests-banner__ic {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.chatlist-requests-banner__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatlist-requests-banner__count {
+  flex-shrink: 0;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 11px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: #fff;
+  background: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ArchiveEntryRow — показывается при наличии архива (сейчас hidden до данных). */
+.chatlist-archive-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px var(--space-8);
+  border: none;
+  border-bottom: 1px solid var(--color-separator);
+  background: var(--color-bg);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.chatlist-archive-row:hover {
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+}
+
+.chatlist-archive-row[hidden] {
+  display: none !important;
+}
+
+.chatlist-archive-row__ic {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-text) 8%, var(--color-bg));
+}
+
+:root[data-theme="light"] .chatlist-archive-row__ic {
+  background: #eef0f3;
+}
+
+.chatlist-archive-row__ic svg {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-secondary);
+}
+
+.chatlist-archive-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chatlist-archive-row__title {
+  font-size: var(--type-title-medium-size);
+  font-weight: 600;
+  line-height: var(--type-title-medium-lh);
+  color: var(--color-text);
+}
+
+.chatlist-archive-row__sub {
+  font-size: var(--type-body-small-size);
+  line-height: var(--type-body-small-lh);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatlist-archive-row__badge {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-text-secondary);
+  color: #fff;
+  font-size: var(--type-label-small-size);
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.chatlist-archive-row__badge:not([hidden]) {
+  display: inline-flex;
+}
+
+.chatlist-archive-row__chev {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-text-secondary);
+}
+
+.chatlist-hint {
+  flex-shrink: 0;
+  padding: var(--space-7) var(--space-8) var(--space-6);
+  font-size: var(--type-label-medium-size);
+  line-height: var(--type-label-medium-lh);
+  color: var(--color-text-tertiary);
+}
+
+/* Богатый empty-state в стиле Telegram/Signal: иконка → заголовок → подсказка,
+   вертикально центрировано в свободной высоте сайдбара. */
+.chatlist-hint--empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+/* Когда отображается empty-state — пустой <ul> не должен занимать высоту. */
+.chatlist-hint--empty + .chatlist-rows {
+  display: none;
+}
+
+.chatlist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 260px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.chatlist-empty__icon {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-text-tertiary);
+  margin-bottom: 4px;
+}
+
+.chatlist-empty__icon svg {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+.chatlist-empty__title {
+  margin: 0;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.chatlist-empty__subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+  max-width: 220px;
+}
+
+.chatlist-rows {
+  flex: 1;
+  margin: 0;
+  padding: 0 0 var(--space-4);
+  list-style: none;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-text) 14%, transparent) transparent;
+}
+
+.chatlist-rows::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chatlist-rows::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text) 14%, transparent);
+  border-radius: 3px;
+}
+
+.chatlist-rows::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text) 22%, transparent);
+}
+
+.chatlist-section {
+  list-style: none;
+  margin: var(--space-4) var(--space-3) var(--space-2);
+  padding: 0;
+  pointer-events: none;
+}
+
+.chatlist-section__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.chatlist-row {
+  margin: 0;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.chatlist-row:hover .chatlist-row__inner {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.chatlist-row--active .chatlist-row__inner {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.chatlist-row--active .chatlist-row__name,
+.chatlist-row--active .chatlist-row__time,
+.chatlist-row--active .chatlist-row__time--unread {
+  color: var(--color-row-active-text);
+}
+
+.chatlist-row--active .chatlist-row__preview,
+.chatlist-row--active .chatlist-row__preview-sender {
+  color: var(--color-row-active-sub);
+}
+
+.chatlist-row--active .chatlist-row__badge {
+  background: #ffffff;
+  color: var(--color-accent);
+}
+
+/* Session-spec row: padding 8/16, gap 12 между avatar и content, без radius */
+.chatlist-row__inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 0;
+  padding: 8px 16px;
+  border-radius: 0;
+  transition:
+    background 0.14s ease;
+}
+
+.chatlist-row:active .chatlist-row__inner {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+/* Session avatar XS = 40px, без gradient — однотонный круг */
+.chatlist-avatar--peer {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: var(--av-bg, var(--color-muted));
+}
+
+.chatlist-avatar--peer.chatlist-avatar--online::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--color-success);
+  border: 2.5px solid var(--color-bg);
+}
+
+.chatlist-row--active .chatlist-avatar--peer.chatlist-avatar--online::after {
+  border-color: var(--color-row-active);
+}
+
+.chatlist-row__avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chatlist-row__avatar-wrap .chatlist-avatar--peer {
+  position: relative;
+}
+
+.chatlist-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.chatlist-row__top,
+.chatlist-row__bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 18px;
+}
+
+.chatlist-row__name {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatlist-row__time {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--color-text-tertiary);
+  transition: color 0.16s ease;
+}
+
+.chatlist-row__time--unread {
+  color: var(--color-accent-soft);
+}
+
+.chatlist-row__preview {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatlist-row__preview-sender {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.chatlist-row__badge {
+  flex-shrink: 0;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.chatlist-row__badge--muted {
+  background: var(--color-text-tertiary);
+  color: var(--color-bg);
+  box-shadow: none;
+}
+
+/* Pin / mute affordances on the right of the row */
+.chatlist-row__icons {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-tertiary);
+}
+
+.chatlist-row__icons svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+/* Нижняя панель пользователя (Discord-like: вложенная плашка + иконки справа) */
+.chatlist-userbar {
+  flex-shrink: 0;
+  padding: var(--space-4) var(--space-6) var(--space-4);
+  border-top: 1px solid var(--color-separator);
+  background: color-mix(in srgb, var(--color-bg) 92%, var(--color-surface));
+}
+
+.chatlist-userbar__surface {
+  border-radius: 14px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-bg));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 16%, transparent),
+    0 14px 36px color-mix(in srgb, #000 24%, transparent);
+}
+
+.chatlist-userbar__surface .chatlist-userbar__panel {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.chatlist-userbar__panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 12px 8px 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  border: 1px solid color-mix(in srgb, var(--color-separator) 120%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 4%, transparent);
+}
+
+.chatlist-userbar__identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  flex: 1;
+}
+
+.chatlist-userbar__identity--btn {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  margin: 0;
+  padding: var(--space-2) var(--space-2) var(--space-2) 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  transition:
+    background 0.22s ease,
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chatlist-userbar__identity--btn:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+
+.chatlist-userbar__identity--btn:active {
+  transform: scale(0.992);
+}
+
+.chatlist-userbar__expand {
+  flex-shrink: 0;
+  align-self: center;
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border: none;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chatlist-userbar__expand:hover {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-text) 11%, transparent);
+}
+
+.chatlist-userbar__expand--open {
+  transform: rotate(-180deg);
+}
+
+.chatlist-userbar__drawer {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-6px);
+  padding: 0 var(--space-4);
+  transition:
+    max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.32s ease,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.4s ease;
+  pointer-events: none;
+}
+
+.chatlist-userbar__drawer--open {
+  /* Компактная панель без внутреннего скролла */
+  max-height: min(220px, 46vh);
+  opacity: 1;
+  transform: translateY(0);
+  padding: 0 var(--space-4) var(--space-2);
+  pointer-events: auto;
+}
+
+.chatlist-userbar__drawer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 6px 10px;
+}
+
+.chatlist-userbar--focus.chatlist-userbar:not(.chatlist-userbar--guest) .chatlist-userbar__surface {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 22%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent),
+    0 14px 36px color-mix(in srgb, #000 24%, transparent);
+}
+
+.chatlist-userbar__deckline {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-separator) 75%, transparent);
+  background: color-mix(in srgb, var(--color-elevated) 42%, var(--color-bg));
+}
+
+.chatlist-userbar__deckline-mark {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent-soft);
+}
+
+.chatlist-userbar__deckline-text {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.chatlist-userbar__drawer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chatlist-userbar__drawer-section--compact {
+  gap: 5px;
+}
+
+.chatlist-userbar__drawer-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+/* Сегментированный трек (в духе Discord / macOS, но свой силуэт) */
+.chatlist-userbar__seg {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  padding: 3px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #000 38%, var(--color-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-separator) 100%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 4%, transparent);
+}
+
+.chatlist-userbar__pill {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 6px 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.chatlist-userbar__pill:hover:not(:disabled) {
+  color: var(--color-text-secondary);
+}
+
+.chatlist-userbar__pill--on {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 92%, #fff);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 10%, transparent),
+    0 6px 14px color-mix(in srgb, #000 35%, transparent);
+}
+
+.chatlist-userbar__pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.chatlist-userbar__drawer-settings-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.chatlist-userbar__drawer-settings-link:hover {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-text);
+}
+
+.chatlist-userbar__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-bg) 100%, transparent);
+}
+
+.chatlist-userbar--guest .chatlist-userbar__avatar {
+  background: var(--color-elevated);
+  color: var(--color-text-secondary);
+  box-shadow: none;
+}
+
+.chatlist-userbar__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.chatlist-userbar__name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatlist-userbar__sub {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatlist-userbar__actions {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.chatlist-userbar__actions .chatlist-connection-dot {
+  margin-right: 2px;
+}
+
+.chatlist-userbar__icon-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: not-allowed;
+  opacity: 0.45;
+  padding: 0;
+  transition:
+    background var(--motion-theme),
+    color var(--motion-theme),
+    opacity var(--motion-theme);
+}
+
+.chatlist-userbar__icon-btn:disabled {
+  pointer-events: none;
+}
+
+.chatlist-userbar__icon-btn--live {
+  opacity: 1;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.chatlist-userbar__icon-btn--live:hover {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  color: var(--color-accent-soft);
+}
+
+.chatlist-userbar__icon-btn--live:active {
+  transform: scale(0.96);
+}
+
+.chatlist-connection-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--color-text-tertiary);
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.chatlist-connection-dot--idle {
+  background: var(--color-text-tertiary);
+}
+
+.chatlist-connection-dot--rest-ok {
+  background: var(--color-success);
+}
+
+@keyframes koto-presence-ring {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px var(--color-surface),
+      0 0 0 0 color-mix(in srgb, var(--color-success) 45%, transparent);
+  }
+  55% {
+    box-shadow:
+      0 0 0 2px var(--color-surface),
+      0 0 0 7px color-mix(in srgb, var(--color-success) 0%, transparent);
+  }
+}
+
+.chatlist-connection-dot--ws-connected {
+  background: var(--color-success);
+  animation: koto-presence-ring 2.6s ease-in-out infinite;
+}
+
+.chatlist-connection-dot--ws-disconnected,
+.chatlist-connection-dot--stopped {
+  background: var(--color-text-tertiary);
+}
+
+.chatlist-connection-dot--ws-error,
+.chatlist-connection-dot--rest-fail {
+  background: #f0b429;
+}
+
+/* ── Друзья (вторая колонка, как Pending / All в Discord) ── */
+.friends-sidebar-stack {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-separator);
+  animation: koto-settings-nav-fade-in 200ms ease;
+  box-sizing: border-box;
+}
+
+.friends-sidebar-stack[hidden] {
+  display: none !important;
+}
+
+.friends-sidebar__toolbar {
+  flex-shrink: 0;
+  padding: var(--space-7) var(--space-8) var(--space-4);
+}
+
+.friends-sidebar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.friends-sidebar__title {
+  margin: 0;
+  padding-top: 2px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.friends-sidebar__count {
+  flex-shrink: 0;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 11px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  color: var(--color-on-accent);
+}
+
+.friends-sidebar__tabs {
+  flex-shrink: 0;
+  display: flex;
+  gap: var(--space-3);
+  padding: 0 var(--space-8) var(--space-5);
+}
+
+.friends-sidebar__tab {
+  flex: 1;
+  border: none;
+  border-radius: 11px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+  transition:
+    background var(--motion-theme),
+    color var(--motion-theme),
+    box-shadow var(--motion-theme);
+}
+
+.friends-sidebar__tab:hover {
+  background: color-mix(in srgb, var(--color-text) 9%, transparent);
+  color: var(--color-text);
+}
+
+.friends-sidebar__tab--active {
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  color: var(--color-text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 32%, transparent);
+}
+
+.friends-sidebar__scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: var(--space-5);
+}
+
+.friends-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px var(--space-5) 0;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.friends-list:empty {
+  display: none;
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 0;
+}
+
+.friends-list__section {
+  list-style: none;
+  padding: 14px var(--space-3) 6px;
+}
+
+.friends-list__section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.friends-list__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 10px var(--space-3);
+  margin-bottom: 2px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-surface) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-separator) 80%, transparent);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.friends-list__row[role="button"] {
+  cursor: pointer;
+}
+
+.friends-list__row[role="button"]:hover {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.friends-list__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--friends-av-hue, 210), 52%, 46%),
+    hsl(calc(var(--friends-av-hue, 210) + 18), 48%, 38%)
+  );
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-bg) 70%, transparent);
+}
+
+.friends-list__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.friends-list__title {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friends-list__sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Превью первого сообщения в incoming-запросе на чат (Session-style). */
+.friends-list__preview {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.friends-list__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.friends-list__btn {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.12s ease, transform 0.12s ease;
+}
+
+.friends-list__btn:active {
+  transform: scale(0.97);
+}
+
+.friends-list__btn--primary {
+  background: var(--gradient-accent);
+  color: var(--color-on-accent);
+}
+
+.friends-list__btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+.friends-list__btn--ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  box-shadow: inset 0 0 0 1px var(--color-separator);
+}
+
+.friends-list__btn--ghost:hover {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.friends-list__badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-success, #3ba55d);
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-success, #3ba55d) 18%, transparent);
+}
+
+.friends-empty-hint {
+  flex: 0 1 auto;
+  margin: var(--space-5) auto 0;
+  padding: 0 var(--space-8);
+  max-width: 280px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.friends-empty-hint[hidden] {
+  display: none !important;
+}
+

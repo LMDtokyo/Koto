@@ -1,0 +1,1553 @@
+/* SettingsOverlay — full-screen overlay (Discord-like) с blurred backdrop,
+   sidebar категорий слева + scroll-spy content справа. */
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  isolation: isolate;
+  animation: settings-overlay-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.settings-overlay[hidden] {
+  display: none !important;
+}
+
+@keyframes settings-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.settings-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+
+.settings-overlay__shell {
+  position: relative;
+  margin: auto;
+  width: min(1080px, calc(100vw - 40px));
+  height: min(720px, calc(100vh - 40px));
+  display: flex;
+  background: var(--color-bg);
+  border: 1px solid var(--color-separator);
+  border-radius: 18px;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: settings-shell;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-text) 4%, transparent),
+    0 36px 80px rgba(0, 0, 0, 0.55);
+  animation: settings-overlay-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes settings-overlay-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Левая колонка: категории + поиск (Linear/macOS-style) ── */
+.settings-overlay__nav {
+  flex: 0 0 232px;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--color-bg) 78%, var(--color-surface));
+  border-right: 1px solid var(--color-separator);
+  min-height: 0;
+}
+
+.settings-overlay__nav-header {
+  flex-shrink: 0;
+  padding: 18px 16px 12px;
+}
+
+.settings-overlay__nav-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.settings-overlay__search {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 12px 12px;
+  padding: 0 10px;
+  height: 32px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+  transition: background 0.14s ease, box-shadow 0.14s ease;
+}
+
+.settings-overlay__search:focus-within {
+  background: var(--color-surface);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.settings-overlay__search svg {
+  width: 13px;
+  height: 13px;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.settings-overlay__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12.5px;
+  letter-spacing: -0.005em;
+  outline: none;
+}
+
+.settings-overlay__search input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.settings-overlay__nav-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 6px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-text) 12%, transparent) transparent;
+}
+
+.settings-overlay__nav-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-overlay__nav-list::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text) 12%, transparent);
+  border-radius: 3px;
+}
+
+.settings-overlay__nav-list::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text) 20%, transparent);
+}
+
+.settings-overlay__nav-group {
+  padding: 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.settings-overlay__nav-group:first-child {
+  padding-top: 4px;
+}
+
+.settings-overlay__nav-group[hidden] {
+  display: none !important;
+}
+
+.settings-overlay__nav-group-label {
+  margin: 0 0 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-text-tertiary);
+  text-transform: none;
+}
+
+.settings-overlay__nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 10px;
+  min-height: 32px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--color-text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.settings-overlay__nav-ic {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-tertiary);
+  transition: color 0.14s ease;
+}
+
+.settings-overlay__nav-ic svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.settings-overlay__nav-label {
+  min-width: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-overlay__nav-item:hover:not(.settings-overlay__nav-item--active) .settings-overlay__nav-ic {
+  color: var(--color-text-secondary);
+}
+
+.settings-overlay__nav-item--active .settings-overlay__nav-ic {
+  color: var(--color-accent-soft);
+}
+
+.settings-overlay__nav-item--danger .settings-overlay__nav-ic {
+  color: var(--color-error);
+}
+
+.settings-overlay__nav-item:hover:not(.settings-overlay__nav-item--active) {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+  color: var(--color-text);
+}
+
+.settings-overlay__nav-item--active {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.settings-overlay__nav-item--danger {
+  color: var(--color-error);
+  opacity: 0.92;
+}
+
+.settings-overlay__nav-item--danger:hover:not(.settings-overlay__nav-item--active) {
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+  color: var(--color-error);
+  opacity: 1;
+}
+
+.settings-overlay__nav-item[hidden] {
+  display: none !important;
+}
+
+/* ── Правая колонка: scroll-spy content ── */
+.settings-overlay__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  min-height: 0;
+}
+
+.settings-overlay__content-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px 12px;
+  border-bottom: 1px solid var(--color-separator);
+}
+
+.settings-overlay__content-titles {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Crumb «АККАУНТ»: визуально скрыт, остаётся для скринридеров —
+   активный пункт сайдбара уже показывает контекст. */
+.settings-overlay__content-crumb {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.settings-overlay__content-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.settings-overlay__close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+
+.settings-overlay__close:hover {
+  background: var(--color-elevated);
+  color: var(--color-text);
+}
+
+.settings-overlay__close:active {
+  transform: scale(0.94);
+}
+
+.settings-overlay__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 28px 64px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-text) 14%, transparent) transparent;
+  scroll-behavior: smooth;
+}
+
+.settings-overlay__scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-overlay__scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text) 14%, transparent);
+  border-radius: 4px;
+}
+
+/* Только одна секция видна одновременно (Discord-pattern) */
+.settings-overlay__section {
+  padding: 4px 0 8px;
+}
+
+.settings-overlay__section[hidden] {
+  display: none !important;
+}
+
+.settings-overlay__section-header {
+  margin: 0 0 12px;
+}
+
+@container settings-shell (max-width: 760px) {
+  .settings-overlay__section-header {
+    margin: 0 0 10px;
+  }
+  .settings-overlay__section-sub {
+    font-size: 12.5px;
+  }
+}
+
+/* Title секции скрыт — главный заголовок уже в шапке overlay (settings-overlay-title).
+   Лид-описание остаётся видимым. */
+.settings-overlay__section-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.settings-overlay__section-sub {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  max-width: 540px;
+}
+
+.settings-overlay__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-separator);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.settings-overlay__row:hover {
+  background: var(--color-elevated);
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-separator));
+}
+
+.settings-overlay__row-ic {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.settings-overlay__row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-overlay__row-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-overlay__row-detail {
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-overlay__row-action {
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-accent-soft);
+}
+
+.settings-overlay__placeholder {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.settings-overlay__feedback {
+  margin: 4px 2px 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  min-height: 14px;
+}
+
+.settings-overlay__hint-box {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-separator);
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.settings-overlay__hint-box p {
+  margin: 0 0 8px;
+}
+
+.settings-overlay__hint-box p:last-child {
+  margin-bottom: 0;
+}
+
+.settings-overlay__health-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-overlay__mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--color-text-secondary);
+}
+
+.settings-overlay__btn {
+  border: 1px solid var(--color-separator);
+  border-radius: 8px;
+  padding: 5px 11px;
+  background: var(--color-elevated);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.14s ease, color 0.14s ease;
+}
+
+.settings-overlay__btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ── Адаптив: lock-in ширина окна Tauri может быть любой; container queries
+   реагируют на размер shell-а, media — на vw. Шкала уровней:
+   - >= 920cqi:  стандартный layout (1080×720, nav 232, banner clamp 140-200)
+   - 760-920cqi: nav сужается до 208, отступы content-header чуть меньше
+   - 560-760cqi: nav 188, баннер компактнее, padding тоньше
+   - < 560cqi:   nav схлопывается в overlay-drawer (по кнопке), content на всю ширину
+   ── */
+
+/* Окно само мельче 760px → shell на весь экран без рамки */
+@media (max-width: 760px) {
+  .settings-overlay__shell {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+}
+
+/* Очень низкое окно — высота shell тоже на весь экран */
+@media (max-height: 600px) {
+  .settings-overlay__shell {
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+
+@container settings-shell (max-width: 920px) {
+  .settings-overlay__nav {
+    flex-basis: 208px;
+  }
+  .settings-overlay__nav-header,
+  .settings-overlay__content-header {
+    min-height: 64px;
+  }
+  .settings-overlay__content-header {
+    padding: 0 20px;
+  }
+  .settings-overlay__scroll {
+    padding: 12px 22px 56px;
+  }
+  .settings-overlay__nav-title,
+  .settings-overlay__content-title {
+    font-size: 18px;
+  }
+}
+
+@container settings-shell (max-width: 760px) {
+  .settings-overlay__nav {
+    flex-basis: 188px;
+  }
+  .settings-overlay__nav-header {
+    padding: 0 12px;
+    min-height: 56px;
+  }
+  .settings-overlay__nav-item {
+    padding: 8px 10px;
+  }
+  .settings-overlay__content-header {
+    padding: 0 16px;
+    min-height: 56px;
+  }
+  .settings-overlay__scroll {
+    padding: 12px 18px 48px;
+  }
+  .settings-overlay__nav-title,
+  .settings-overlay__content-title {
+    font-size: 17px;
+  }
+  .settings-overlay__content-crumb {
+    font-size: 10px;
+  }
+  .profile-editor__card {
+    --profile-avatar-size: 80px;
+    --profile-avatar-x: 16px;
+    margin-bottom: 14px;
+  }
+}
+
+@container settings-shell (max-width: 560px) {
+  .settings-overlay__nav {
+    flex-basis: 160px;
+  }
+  .settings-overlay__nav-header,
+  .settings-overlay__content-header {
+    min-height: 52px;
+  }
+  .settings-overlay__content-header {
+    padding: 0 14px;
+  }
+  .settings-overlay__scroll {
+    padding: 10px 14px 40px;
+  }
+  .profile-editor__card {
+    --profile-avatar-size: 72px;
+    --profile-avatar-x: 12px;
+  }
+  .profile-editor__media-btn {
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
+  .profile-editor__media-btn--ghost {
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+  }
+}
+
+/* ── Generic content blocks для секций (calm-list, switch, segmented) ── */
+.settings-overlay__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-overlay__list-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-separator);
+}
+
+.settings-overlay__list-row--standalone {
+  margin-top: 4px;
+}
+
+.settings-overlay__list-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-overlay__list-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--color-text);
+}
+
+.settings-overlay__list-sub {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+/* Toggle switch */
+.settings-overlay__switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.settings-overlay__switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.settings-overlay__switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 18%, transparent);
+  transition: background 0.16s ease;
+}
+
+.settings-overlay__switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.42);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.settings-overlay__switch input:checked + .settings-overlay__switch-track {
+  background: var(--color-accent);
+}
+
+.settings-overlay__switch input:checked + .settings-overlay__switch-track::after {
+  transform: translateX(18px);
+}
+
+.settings-overlay__switch input:focus-visible + .settings-overlay__switch-track {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+/* Segmented control */
+.settings-overlay__segmented {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  gap: 2px;
+}
+
+.settings-overlay__segmented--full {
+  display: flex;
+  width: 100%;
+}
+
+.settings-overlay__segmented-opt {
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: color 0.14s ease, background 0.14s ease;
+  white-space: nowrap;
+}
+
+.settings-overlay__segmented-opt:hover:not(.settings-overlay__segmented-opt--active) {
+  color: var(--color-text);
+}
+
+.settings-overlay__segmented-opt--active {
+  color: var(--color-text);
+  background: var(--color-elevated);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
+}
+
+/* Notice (warning / info) */
+.settings-overlay__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-accent) 9%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, var(--color-separator));
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.settings-overlay__notice--warn {
+  background: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-warning) 35%, var(--color-separator));
+}
+
+.settings-overlay__notice-ic {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-warning);
+}
+
+/* Action row под секцией */
+.settings-overlay__actions-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.settings-overlay__btn--primary {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+.settings-overlay__btn--primary:hover:not(:disabled) {
+  background: var(--color-accent-pressed);
+  border-color: transparent;
+  color: #fff;
+}
+
+.settings-overlay__btn--danger {
+  color: var(--color-error);
+  border-color: color-mix(in srgb, var(--color-error) 30%, var(--color-separator));
+  background: transparent;
+}
+
+.settings-overlay__btn--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.settings-overlay__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Device card / sessions — Discord-pattern: caps target line + sub line + X */
+.settings-overlay__device-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-separator);
+  transition: border-color 0.14s ease;
+}
+
+.settings-overlay__device-card:hover {
+  border-color: color-mix(in srgb, var(--color-text) 14%, var(--color-separator));
+}
+
+.settings-overlay__device-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  color: var(--color-text-secondary);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.settings-overlay__device-card--current .settings-overlay__device-icon {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-accent-soft);
+}
+
+.settings-overlay__device-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.settings-overlay__device-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-overlay__device-target {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-overlay__device-meta {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-overlay__chip {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text-secondary);
+}
+
+.settings-overlay__chip--ok {
+  background: color-mix(in srgb, var(--color-success) 16%, transparent);
+  color: var(--color-success);
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+}
+
+.settings-overlay__sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-overlay__device-card--current {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-separator));
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
+}
+
+.settings-overlay__device-card--busy {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* X-кнопка справа, как в Discord — без текста, только иконка */
+.settings-overlay__device-revoke {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  transition: background 0.14s ease, color 0.14s ease, transform 0.12s ease;
+}
+
+.settings-overlay__device-revoke:hover {
+  background: color-mix(in srgb, var(--color-error) 14%, transparent);
+  color: var(--color-error);
+}
+
+.settings-overlay__device-revoke:active {
+  transform: scale(0.94);
+}
+
+.settings-overlay__device-revoke svg {
+  display: block;
+}
+
+.settings-overlay__empty-line {
+  margin: 12px 4px 0;
+  font-size: 12.5px;
+  color: var(--color-text-tertiary);
+}
+
+.settings-overlay__empty-line--error {
+  color: var(--color-error);
+}
+
+/* Stat card (Storage) */
+.settings-overlay__stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-separator);
+}
+
+.settings-overlay__stat-label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 4px;
+}
+
+.settings-overlay__stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--color-text);
+}
+
+/* Font preview */
+.settings-overlay__font-preview {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-separator);
+  font-size: var(--font-preview-size, 15px);
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+/* Username field в profile editor */
+.profile-editor__username {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--color-separator);
+  border-radius: 10px;
+  background: var(--color-bg);
+  overflow: hidden;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.profile-editor__username:focus-within {
+  border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.profile-editor__username-prefix {
+  flex-shrink: 0;
+  padding: 0 0 0 12px;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.profile-editor__input--username {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding-left: 4px;
+}
+
+.profile-editor__input--username:focus {
+  border: none;
+  box-shadow: none;
+}
+
+/* ── Profile editor (Discord-like banner + avatar overlap) ── */
+.profile-editor__card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-separator);
+  margin-bottom: 16px;
+}
+
+.profile-editor__banner {
+  position: relative;
+  height: clamp(96px, 14cqi, 140px);
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-elevated);
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.profile-editor__banner-fallback {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-accent) 90%, transparent),
+    color-mix(in srgb, var(--color-accent) 55%, #000)
+  );
+}
+
+.profile-editor__banner[data-state="filled"] .profile-editor__banner-fallback {
+  display: none;
+}
+
+.profile-editor__banner-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-editor__banner-img[hidden] {
+  display: none;
+}
+
+/* Подсказка на пустом баннере. На узких окнах пропадает, чтобы не конфликтовать
+   с кнопкой «Изменить баннер» в правом нижнем углу. */
+.profile-editor__banner::after {
+  content: "Перетащите изображение или нажмите";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  padding: 0 96px 0 96px;
+  text-align: center;
+}
+
+@container settings-shell (max-width: 760px) {
+  .profile-editor__banner::after {
+    content: "";
+  }
+}
+
+.profile-editor__banner[data-state="empty"]::after {
+  opacity: 1;
+}
+
+.profile-editor__banner[data-drag="over"] {
+  outline: 2px dashed color-mix(in srgb, var(--color-accent) 80%, white);
+  outline-offset: -8px;
+}
+
+.profile-editor__banner-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.42) 0%,
+    rgba(0, 0, 0, 0) 50%
+  );
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+
+.profile-editor__banner-overlay > * {
+  pointer-events: auto;
+}
+
+.profile-editor__media-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: background 0.14s ease, transform 0.12s ease, box-shadow 0.14s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.32);
+}
+
+.profile-editor__media-btn:hover {
+  background: var(--color-accent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 38%, transparent);
+}
+
+.profile-editor__media-btn:active {
+  transform: scale(0.96);
+}
+
+.profile-editor__media-btn[hidden] {
+  display: none !important;
+}
+
+.profile-editor__media-btn--ghost {
+  padding: 8px;
+  width: 36px;
+  height: 36px;
+  justify-content: center;
+}
+
+.profile-editor__media-btn--ghost:hover {
+  background: var(--color-error);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-error) 38%, transparent);
+}
+
+/* Loading spinner поверх media-area */
+.profile-editor__loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.profile-editor__loader[data-on="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.profile-editor__spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.22);
+  border-top-color: #fff;
+  animation: profile-editor-spin 0.7s linear infinite;
+}
+
+@keyframes profile-editor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.profile-editor__avatar-wrap {
+  position: relative;
+  margin: calc(var(--profile-avatar-size, 96px) * -0.42) 0 0 var(--profile-avatar-x, 20px);
+  width: var(--profile-avatar-size, 96px);
+  z-index: 1;
+}
+
+.profile-editor__avatar {
+  position: relative;
+  width: var(--profile-avatar-size, 96px);
+  height: var(--profile-avatar-size, 96px);
+  border-radius: 50%;
+  border: 5px solid var(--color-bg);
+  background: var(--color-accent);
+  padding: 0;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.profile-editor__avatar:hover {
+  transform: scale(1.02);
+}
+
+.profile-editor__avatar:active {
+  transform: scale(0.98);
+}
+
+.profile-editor__avatar[data-drag="over"] {
+  outline: 3px dashed color-mix(in srgb, var(--color-accent) 80%, white);
+  outline-offset: -10px;
+}
+
+.profile-editor__avatar-fallback {
+  font-size: calc(var(--profile-avatar-size, 96px) * 0.3);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.profile-editor__avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-editor__avatar-img[hidden] {
+  display: none;
+}
+
+/* Discord-style hover overlay: затемнение + камера в центре */
+.profile-editor__avatar-edit {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.profile-editor__avatar:hover .profile-editor__avatar-edit,
+.profile-editor__avatar:focus-visible .profile-editor__avatar-edit,
+.profile-editor__avatar[data-drag="over"] .profile-editor__avatar-edit {
+  opacity: 1;
+}
+
+.profile-editor__avatar-edit svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Spinner внутри аватара во время загрузки */
+.profile-editor__avatar-loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.18s ease;
+}
+
+.profile-editor__avatar-loader[data-on="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.profile-editor__body {
+  padding: 14px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.profile-editor__field {
+  max-width: 560px;
+}
+
+@container settings-shell (max-width: 760px) {
+  .profile-editor__body {
+    padding: 12px 16px 16px;
+    gap: 12px;
+  }
+}
+
+@container settings-shell (max-width: 560px) {
+  .profile-editor__body {
+    padding: 10px 12px 14px;
+    gap: 10px;
+  }
+  .profile-editor__input {
+    padding: 9px 10px;
+    font-size: 13.5px;
+  }
+}
+
+.profile-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-editor__field-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.profile-editor__input {
+  width: 100%;
+  border: 1px solid var(--color-separator);
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.profile-editor__input:focus {
+  border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.profile-editor__input--multi {
+  resize: vertical;
+  min-height: 64px;
+  max-height: 200px;
+}
+
+.profile-editor__field-hint {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-tertiary);
+  margin: 2px 0 0;
+}
+
+.profile-editor__readonly {
+  margin-top: 4px;
+  border-top: 1px solid var(--color-separator);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-editor__readonly-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.profile-editor__readonly-label {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  min-width: 96px;
+}
+
+.profile-editor__readonly-value {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-editor__readonly-action {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent-soft);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.12s ease;
+}
+
+.profile-editor__readonly-action:hover {
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+
+.profile-editor__readonly-action--muted {
+  color: var(--color-text-tertiary);
+  cursor: default;
+}
+
+.profile-editor__readonly-action--muted:hover {
+  background: transparent;
+}
+
+/* Bottom action bar — sticky внутри scroll'а: прилипает к низу видимой области.
+   Отображается всегда, но выезжает только при dirty. */
+.profile-editor__actions {
+  position: sticky;
+  bottom: 12px;
+  margin: 18px 0 4px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-elevated) 96%, var(--color-bg));
+  border: 1px solid color-mix(in srgb, var(--color-text) 10%, var(--color-separator));
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 4%, transparent) inset,
+    0 12px 32px rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px);
+  transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 5;
+}
+
+.profile-editor__actions[data-dirty="true"] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.profile-editor__status {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+}
+
+.profile-editor__status--error {
+  color: var(--color-error);
+}
+
+.profile-editor__status--ok {
+  color: var(--color-success);
+}
+
+.profile-editor__btn {
+  border: none;
+  border-radius: 9px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, transform 0.12s ease;
+}
+
+.profile-editor__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profile-editor__btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.profile-editor__btn--ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.profile-editor__btn--ghost:hover:not(:disabled) {
+  color: var(--color-text);
+}
+
+.profile-editor__btn--primary {
+  background: var(--color-accent);
+  color: #ffffff;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 32%, transparent);
+}
+
+.profile-editor__btn--primary:hover:not(:disabled) {
+  background: var(--color-accent-pressed);
+}

@@ -1,0 +1,78 @@
+[versions]
+kotlin                 = "2.1.20"
+composeMultiplatform   = "1.10.3"
+coroutines             = "1.10.1"
+serialization          = "1.8.1"
+ktor                   = "3.4.3"
+sqldelight             = "2.3.2"
+koin                   = "4.2.0"
+koinCompose            = "4.2.0"
+slf4j                  = "2.0.17"
+kotlinxCollectionsImmutable = "0.4.0"
+bouncycastle           = "1.79"
+coil                   = "3.1.0"
+javaKeyring            = "1.0.3"
+kmpTorRuntime          = "2.6.0"
+kmpTorResource         = "408.22.0"
+bip39                  = "1.0.9"
+zxing                  = "3.5.3"
+
+[libraries]
+# Kotlinx
+coroutines-core                  = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core",     version.ref = "coroutines" }
+coroutines-swing                 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing",    version.ref = "coroutines" }
+serialization-json               = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json",  version.ref = "serialization" }
+collections-immutable            = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
+
+# Ktor Client
+ktor-client-core                 = { group = "io.ktor", name = "ktor-client-core",                 version.ref = "ktor" }
+ktor-client-cio                  = { group = "io.ktor", name = "ktor-client-cio",                  version.ref = "ktor" }
+ktor-client-content-negotiation  = { group = "io.ktor", name = "ktor-client-content-negotiation",  version.ref = "ktor" }
+ktor-client-logging              = { group = "io.ktor", name = "ktor-client-logging",              version.ref = "ktor" }
+ktor-client-auth                 = { group = "io.ktor", name = "ktor-client-auth",                 version.ref = "ktor" }
+ktor-client-websockets           = { group = "io.ktor", name = "ktor-client-websockets",           version.ref = "ktor" }
+ktor-serialization-json          = { group = "io.ktor", name = "ktor-serialization-kotlinx-json",  version.ref = "ktor" }
+
+# SQLDelight (local DB)
+sqldelight-jvm-driver            = { group = "app.cash.sqldelight", name = "sqlite-driver",         version.ref = "sqldelight" }
+sqldelight-coroutines-extensions = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
+
+# Koin (DI)
+koin-core                        = { group = "io.insert-koin", name = "koin-core",                  version.ref = "koin" }
+koin-compose                     = { group = "io.insert-koin", name = "koin-compose",               version.ref = "koinCompose" }
+koin-compose-viewmodel           = { group = "io.insert-koin", name = "koin-compose-viewmodel",     version.ref = "koinCompose" }
+
+# Logging (zerolog-style JSON for desktop; backs slf4j used by Ktor + SQLDelight)
+slf4j-simple                     = { group = "org.slf4j", name = "slf4j-simple",                    version.ref = "slf4j" }
+
+# Signal Protocol primitives (shared with android)
+bouncycastle                     = { group = "org.bouncycastle", name = "bcprov-jdk18on",           version.ref = "bouncycastle" }
+
+# Coil 3 (image loading, Compose MP compatible)
+coil-compose                     = { group = "io.coil-kt.coil3", name = "coil-compose",             version.ref = "coil" }
+coil-network-ktor                = { group = "io.coil-kt.coil3", name = "coil-network-ktor3",       version.ref = "coil" }
+
+# OS keystore wrapper (Windows DPAPI / macOS Keychain / Linux libsecret)
+java-keyring                     = { group = "com.github.javakeyring", name = "java-keyring",       version.ref = "javaKeyring" }
+
+# kmp-tor — embedded Tor for JVM. `runtime` drives start/stop + event observation;
+# `resource-exec-tor` ships the tor binary per platform. The filter-jar plugin strips
+# foreign-platform binaries from the distributable jar to keep download size sane.
+kmp-tor-runtime                  = { group = "io.matthewnelson.kmp-tor", name = "runtime",          version.ref = "kmpTorRuntime"  }
+kmp-tor-resource-exec-tor        = { group = "io.matthewnelson.kmp-tor", name = "resource-exec-tor", version.ref = "kmpTorResource" }
+
+# BIP39 mnemonic (English wordlist + checksummed phrase generation/validation).
+# Pure-Kotlin, used by Zcash/ECC; Maven Central publishes a JVM artifact.
+bip39                            = { group = "cash.z.ecc.android", name = "kotlin-bip39-jvm",       version.ref = "bip39" }
+
+# zxing-core — pure-Java QR code matrix generator. We render the matrix into a
+# Compose Canvas ourselves so no AWT BufferedImage roundtrip is needed.
+zxing-core                       = { group = "com.google.zxing", name = "core",                     version.ref = "zxing" }
+
+[plugins]
+kotlin-jvm              = { id = "org.jetbrains.kotlin.jvm",                 version.ref = "kotlin" }
+kmp-tor-resource-filterjar = { id = "io.matthewnelson.kmp-tor.resource-filterjar", version.ref = "kmpTorResource" }
+kotlin-serialization    = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-compose          = { id = "org.jetbrains.kotlin.plugin.compose",      version.ref = "kotlin" }
+compose-multiplatform   = { id = "org.jetbrains.compose",                    version.ref = "composeMultiplatform" }
+sqldelight              = { id = "app.cash.sqldelight",                      version.ref = "sqldelight" }

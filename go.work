@@ -1,0 +1,15 @@
+go 1.24.0
+
+use (
+	./pkg/errors
+	./pkg/logger
+	./pkg/token
+	./services/auth
+	./services/bot
+	./services/chat
+	./services/gateway
+	./services/media
+	./services/moderation
+	./services/notification
+	./services/user
+)

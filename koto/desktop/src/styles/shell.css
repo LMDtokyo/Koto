@@ -1,0 +1,269 @@
+/* Root shell: Telegram-style sidebar + main; chrome row for theme / window tools */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* HTML5 hidden атрибут должен бить любые display из компонентов. */
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: var(--font-ui);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Шапка вне #app: колонка chrome + область приложения (auth fixed поверх app). */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* React монтирует фрагмент сюда: chrome + auth + .shell. Без flex-цепочки у #root
+   у .shell игнорируется flex:1 — сайдбар не на всю высоту, нижняя панель уезжает вниз. */
+#root {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chrome {
+  flex: 0 0 var(--chrome-height);
+  position: relative;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 var(--space-4) 0 var(--space-6);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-separator);
+  user-select: none;
+}
+
+/* Полоска между брендом и кнопками — основная зона перетаскивания + `data-tauri-drag-region` в разметке */
+.chrome__drag-gap {
+  flex: 1 1 auto;
+  min-width: 48px;
+  min-height: var(--chrome-height);
+  align-self: stretch;
+  cursor: grab;
+}
+
+.chrome__drag-gap:active {
+  cursor: grabbing;
+}
+
+.chrome__controls {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: 4px;
+}
+
+.chrome__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.chrome__brand:active {
+  cursor: grabbing;
+}
+
+/* Squircle + contain — значок целиком */
+.chrome__mark {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.chrome__title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chrome__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--motion-theme),
+    color var(--motion-theme),
+    transform 0.12s ease;
+}
+
+.chrome__btn:hover {
+  background: var(--color-elevated);
+  color: var(--color-text);
+}
+
+.chrome__btn:active {
+  transform: scale(0.96);
+}
+
+.chrome__btn--close:hover {
+  background: rgba(232, 17, 35, 0.92);
+  color: #fff;
+}
+
+.chrome__btn--close:active {
+  background: rgba(200, 14, 30, 0.95);
+}
+
+.chrome__btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.theme-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+:root[data-theme="dark"] .theme-icon--sun,
+:root[data-theme="light"] .theme-icon--moon {
+  display: none;
+}
+
+.shell__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar {
+  flex: 0 0 var(--sidebar-width);
+  max-width: var(--sidebar-width);
+  border-right: 1px solid var(--color-separator);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: flex-basis 0.2s ease;
+}
+
+.sidebar__mono {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.35;
+  word-break: break-all;
+  color: var(--color-text-secondary);
+}
+
+.sidebar__server-title {
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.sidebar__server-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 8px;
+}
+
+.sidebar__health-label {
+  color: var(--color-text-tertiary);
+  font-size: 10px;
+}
+
+.sidebar__health {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar__btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-separator);
+  background: var(--color-elevated);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.sidebar__btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.sidebar__btn--ghost {
+  margin-top: 10px;
+  width: 100%;
+  opacity: 0.85;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-width: 280px;
+  }
+}
+
+/* Раньше здесь скрывали .sidebar-main при <720px — тогда виден только rail,
+   а панель профиля (#chatlist-userbar) внутри main и тоже пропадала. Оставляем
+   колонку списка: на узком окне сужаем ширину, не вырезаем контент. */
+@media (max-width: 720px) {
+  :root {
+    --sidebar-width: min(320px, calc(100vw - 40px));
+  }
+}

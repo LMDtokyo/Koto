@@ -1,0 +1,156 @@
+/**
+ * Semantic tokens — 1:1 с desktop `Palette.kt`, `Colors.kt`, `Typography.kt`.
+ */
+:root {
+  color-scheme: dark;
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --motion-theme: 0.28s ease;
+  /* Motion.kt — KotoEasing ≈ cubic-bezier(0.2, 0.8, 0.2, 1); NavTransition slide ~280ms */
+  --motion-nav-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --motion-nav-duration: 280ms;
+  --motion-nav-fade-in: 220ms;
+  --motion-nav-fade-out: 140ms;
+  --motion-nav-fade-none-in: 180ms;
+  --motion-nav-fade-none-out: 120ms;
+  --motion-slide-push-pop: 320ms;
+  --motion-sheet: 320ms;
+  --motion-bubble-pop: 260ms;
+
+  /* Brand — синхрон с «лисой» (холодный синий); классика dark UI + Discord blurple */
+  --color-accent: #5865f2;
+  --color-accent-pressed: #4752c4;
+  --color-accent-soft: #7289da;
+  --color-accent-deep: #4f5dcc;
+  --color-accent-glow: rgba(88, 101, 242, 0.38);
+  --color-on-accent: #ffffff;
+  --gradient-accent: linear-gradient(135deg, var(--color-accent-soft), var(--color-accent-deep));
+
+  /* Surfaces dark — Discord-style near-black neutrals */
+  --color-bg: #0b0b0c;
+  --color-surface: #1a1a1c;
+  --color-elevated: #222224;
+  --color-hover: #2a2a2c;
+  --color-text: #ffffff;
+  --color-text-secondary: #9e9e9e;
+  --color-text-tertiary: #5e5e62;
+  --color-separator: rgba(255, 255, 255, 0.08);
+  --color-bubble-peer: #27272a;
+  --color-bubble-self: #5865f2;
+  --color-on-bubble-self: #ffffff;
+  --color-on-bubble-peer: #ffffff;
+  --color-bubble-self-meta: rgba(220, 228, 255, 0.85);
+  --color-bubble-peer-meta: rgba(170, 170, 175, 0.85);
+  --color-success: #34c759;
+  --color-error: #ff453a;
+  --color-info: #0a84ff;
+  --color-warning: #ff9f0a;
+  --color-muted: #8e8e93;
+  --color-row-active: color-mix(in srgb, var(--color-accent) 78%, var(--color-surface));
+  --color-row-active-text: #ffffff;
+  --color-row-active-sub: rgba(255, 255, 255, 0.82);
+  --shadow-bubble: 0 1px 1px rgba(0, 0, 0, 0.32);
+
+  --chrome-height: 44px;
+  /* Telegram-style folders rail + chat list */
+  --sidebar-rail-width: 64px;
+  --sidebar-width: 384px;
+  --chatlist-row-height: 64px;
+
+  /* Spacing scale (≈ 4dp grid, как в Compose desktop) */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 10px;
+  --space-6: 12px;
+  --space-7: 14px;
+  --space-8: 16px;
+  --space-9: 18px;
+  --space-10: 20px;
+  --space-11: 24px;
+  --space-12: 28px;
+  --space-13: 32px;
+  --space-14: 40px;
+  --space-15: 48px;
+
+  --content-narrow: 340px;
+  --content-auth-card: 420px;
+  --content-welcome-pane: 400px;
+
+  /* Shapes — TG-leaning bubble proportions */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-bubble: 16px;
+  --radius-bubble-tail-self: 4px;
+  --radius-bubble-tail-peer: 4px;
+  --radius-logo-tile: 24px;
+  --radius-tile-welcome: 30px;
+
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.35);
+
+  /* Typography.kt → CSS (approx. sp → px) */
+  --type-display-xl-size: 46px;
+  --type-display-xl-lh: 52px;
+  --type-display-xl-ls: -0.03em;
+  --type-display-large-size: 40px;
+  --type-display-large-lh: 46px;
+  --type-display-large-ls: -0.03em;
+  --type-headline-small-size: 19px;
+  --type-headline-small-lh: 24px;
+  --type-headline-small-ls: -0.021em;
+  --type-headline-medium-size: 22px;
+  --type-headline-medium-lh: 28px;
+  --type-title-medium-size: 15.5px;
+  --type-title-medium-lh: 20px;
+  --type-title-large-size: 17px;
+  --type-title-large-lh: 22px;
+  --type-title-small-size: 14px;
+  --type-title-small-lh: 18px;
+  --type-body-large-size: 16px;
+  --type-body-large-lh: 22px;
+  --type-body-medium-size: 14.5px;
+  --type-body-medium-lh: 20px;
+  --type-body-small-size: 13px;
+  --type-body-small-lh: 18px;
+  --type-label-medium-size: 12px;
+  --type-label-medium-lh: 15px;
+  --type-label-small-size: 11px;
+  --type-label-small-lh: 14px;
+  --type-bubble-size: 15px;
+  --type-bubble-lh: 20px;
+  --type-mono-size: 13px;
+  --type-mono-lh: 18px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-surface: #f4f4f5;
+  --color-elevated: #ffffff;
+  --color-hover: #ececef;
+  --color-text: #0a0a0a;
+  --color-text-secondary: #707579;
+  --color-text-tertiary: #a8a8a8;
+  --color-separator: rgba(0, 0, 0, 0.08);
+  --color-bubble-peer: #f1f1f3;
+  --color-bubble-self: #effdde;
+  --color-on-bubble-peer: #0a0a0a;
+  --color-on-bubble-self: #0a0a0a;
+  --color-bubble-self-meta: #4fae4e;
+  --color-bubble-peer-meta: #707579;
+  --color-error: #ff3b30;
+  --color-accent: #4752c4;
+  --color-accent-pressed: #3c45a5;
+  --color-accent-soft: #5c6bc0;
+  --color-accent-deep: #3949ab;
+  --color-accent-glow: rgba(71, 82, 196, 0.22);
+  --color-row-active: var(--color-accent);
+  --color-row-active-text: #ffffff;
+  --color-row-active-sub: rgba(255, 255, 255, 0.84);
+  --gradient-accent: linear-gradient(135deg, #5c6bc0, #3c45a5);
+  --shadow-bubble: 0 1px 1px rgba(0, 0, 0, 0.06);
+}

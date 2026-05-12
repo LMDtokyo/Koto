@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Splash screen icon wrapper.
+
+    Problem: windowSplashScreenAnimatedIcon clips to a 160dp circle
+    centered in a 240dp frame (40dp inset from each edge).
+    The cat's ears start at ~16% from top of ic_koto_cat.png.
+    At 240dp frame height: 16% × 240 = 38.4dp — just below the 40dp safe boundary.
+
+    Fix: android:top="22dp" shifts the cat image down 22dp inside the 240dp frame,
+    pushing the ears to 38.4dp + 22dp = 60.4dp from frame top — safely inside the 160dp circle.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:top="22dp"
+        android:drawable="@drawable/ic_koto_cat" />
+</layer-list>

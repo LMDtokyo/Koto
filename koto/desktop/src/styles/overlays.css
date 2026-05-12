@@ -1,0 +1,123 @@
+/* Shell overlays — desktop `KotoApp` attach / emoji / ephemeral + fullscreen call. */
+
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--space-10);
+  padding-bottom: max(var(--space-11), env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, #000 42%, transparent);
+}
+
+.sheet-overlay[hidden] {
+  display: none !important;
+}
+
+.sheet-overlay__card {
+  width: min(420px, 100%);
+  padding: var(--space-10) var(--space-9);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--color-elevated);
+  border: 1px solid var(--color-separator);
+  box-shadow: var(--shadow-elevated);
+}
+
+.sheet-overlay__title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--type-headline-small-size);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sheet-overlay__desc {
+  margin: 0 0 var(--space-8);
+  font-size: var(--type-body-small-size);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.sheet-overlay__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: var(--space-4);
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-separator);
+  background: var(--color-surface);
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.sheet-overlay__btn--accent {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-color: transparent;
+}
+
+.sheet-overlay__btn--ghost {
+  background: transparent;
+}
+
+.call-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-11);
+  background: radial-gradient(120% 80% at 50% 20%, color-mix(in srgb, var(--color-accent) 22%, #000) 0%, #0a0a0c 70%);
+}
+
+.call-overlay[hidden] {
+  display: none !important;
+}
+
+.call-overlay__inner {
+  max-width: 400px;
+  text-align: center;
+  color: #fff;
+}
+
+.call-overlay__title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--type-display-large-size);
+  font-weight: 800;
+  letter-spacing: var(--type-display-large-ls);
+}
+
+.call-overlay__sub {
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  opacity: 0.85;
+  word-break: break-all;
+}
+
+.call-overlay__hint {
+  margin: 0 0 var(--space-10);
+  font-size: var(--type-body-small-size);
+  opacity: 0.75;
+}
+
+.call-overlay__btn {
+  padding: 12px 28px;
+  border-radius: 14px;
+  border: none;
+  font: inherit;
+  font-weight: 700;
+  background: color-mix(in srgb, #fff 16%, transparent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.call-overlay__btn:hover {
+  background: color-mix(in srgb, #fff 26%, transparent);
+}

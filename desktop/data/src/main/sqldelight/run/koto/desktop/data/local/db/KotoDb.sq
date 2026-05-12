@@ -1,0 +1,429 @@
+CREATE TABLE IF NOT EXISTS conversation (
+    id                   TEXT    NOT NULL PRIMARY KEY,
+    -- 1 = direct, 2 = group. Default 1 so legacy rows pre-migration are
+    -- treated as direct chats (the only type we shipped before this column).
+    type                 INTEGER NOT NULL DEFAULT 1,
+    display_name         TEXT    NOT NULL,
+    peer_account_id      TEXT    NOT NULL,
+    avatar_url           TEXT,
+    last_message_preview TEXT    NOT NULL DEFAULT '',
+    last_message_time    INTEGER NOT NULL DEFAULT 0,
+    unread_count         INTEGER NOT NULL DEFAULT 0,
+    is_online            INTEGER NOT NULL DEFAULT 0,
+    is_pinned            INTEGER NOT NULL DEFAULT 0,
+    is_muted             INTEGER NOT NULL DEFAULT 0,
+    is_archived          INTEGER NOT NULL DEFAULT 0,
+    is_verified          INTEGER NOT NULL DEFAULT 0,
+    -- Group membership stored as a comma-separated list of account ids. Empty
+    -- string for direct chats; the list there is implicit (self + peer).
+    member_ids_csv       TEXT    NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS conversation_last_msg_time_idx
+    ON conversation(last_message_time DESC);
+
+CREATE TABLE IF NOT EXISTS message (
+    id              TEXT    NOT NULL PRIMARY KEY,
+    conversation_id TEXT    NOT NULL REFERENCES conversation(id),
+    sender_id       TEXT    NOT NULL,
+    plaintext_cache TEXT    NOT NULL,
+    ciphertext      BLOB    NOT NULL,
+    sent_at         INTEGER NOT NULL,
+    delivered       INTEGER NOT NULL DEFAULT 0,
+    read_at         INTEGER,
+    expires_at      INTEGER,
+    -- Pointer to the message being quoted, NULL when this isn't a reply.
+    -- Receivers resolve this id locally (the chat history is already on
+    -- the device) so the server never sees the quoted plaintext.
+    reply_to        TEXT,
+    -- Last edit timestamp (epoch ms). NULL when never edited.
+    edited_at       INTEGER,
+    -- account id of the original author when this row is a forward; NULL
+    -- when the user typed it themselves. UI renders "Переслано от …".
+    forwarded_from  TEXT,
+    -- 1 when the message is currently pinned in the conversation.
+    pinned          INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS message_conv_time_idx
+    ON message(conversation_id, sent_at DESC);
+
+CREATE TABLE IF NOT EXISTS message_reaction (
+    message_id TEXT NOT NULL,
+    actor_id   TEXT NOT NULL,
+    emoji      TEXT NOT NULL,
+    reacted_at INTEGER NOT NULL,
+    PRIMARY KEY (message_id, actor_id, emoji)
+);
+
+CREATE INDEX IF NOT EXISTS message_reaction_msg_idx
+    ON message_reaction(message_id);
+
+CREATE TABLE IF NOT EXISTS session (
+    id             INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    account_id     TEXT    NOT NULL,
+    session_id     TEXT    NOT NULL DEFAULT '',
+    access_token   TEXT    NOT NULL,
+    refresh_token  TEXT    NOT NULL,
+    expires_at     INTEGER NOT NULL
+);
+
+-- BIP39 phrase the user generated at register/restore time. Stored encrypted
+-- with the same LocalAead key (Windows DPAPI / macOS Keychain) so a database
+-- dump leak does not yield the phrase. Single-row ⇒ id is fixed.
+CREATE TABLE IF NOT EXISTS seed_phrase (
+    id          INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    ciphertext  TEXT    NOT NULL
+);
+
+-- App-wide preferences. Single-row table; non-zero defaults match the
+-- "standard" privacy preset so a fresh install lands in a reasonable place.
+-- Privacy preset is one of: 'standard', 'contacts', 'paranoid'. Toggles
+-- are stored individually so a preset is just a one-shot bulk setter; the
+-- UI lets the user override individual flags afterwards (a la Telegram).
+CREATE TABLE IF NOT EXISTS app_preferences (
+    id                   INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    privacy_preset       TEXT    NOT NULL DEFAULT 'standard',
+    send_read_receipts   INTEGER NOT NULL DEFAULT 1,
+    send_typing          INTEGER NOT NULL DEFAULT 1,
+    show_online_status   INTEGER NOT NULL DEFAULT 1,
+    notif_preview        INTEGER NOT NULL DEFAULT 1,
+    discoverable         INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS crypto_identity (
+    id                INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    identity_key_pair BLOB    NOT NULL,
+    registration_id   INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS crypto_signed_prekey (
+    id          INTEGER NOT NULL PRIMARY KEY,
+    public_key  BLOB    NOT NULL,
+    private_key BLOB    NOT NULL,
+    signature   BLOB    NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS crypto_kyber_prekey (
+    id         INTEGER NOT NULL PRIMARY KEY,
+    serialized BLOB    NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS auto_download (
+    id              INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    photos          INTEGER NOT NULL DEFAULT 1,
+    videos          INTEGER NOT NULL DEFAULT 1,
+    video_max_mb    INTEGER NOT NULL DEFAULT 10,
+    files           INTEGER NOT NULL DEFAULT 1,
+    file_max_mb     INTEGER NOT NULL DEFAULT 50,
+    voice           INTEGER NOT NULL DEFAULT 1
+);
+
+-- Single-row counter for outgoing/incoming byte stats. Updated by the HTTP
+-- and WebSocket layers as bytes flow through; reset clears just this row.
+CREATE TABLE IF NOT EXISTS network_stats (
+    id            INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    sent_bytes    INTEGER NOT NULL DEFAULT 0,
+    received_bytes INTEGER NOT NULL DEFAULT 0,
+    since_at      INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS network_settings (
+    id                 INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    tor_enabled        INTEGER NOT NULL DEFAULT 0,
+    user_proxy_type    TEXT,
+    user_proxy_host    TEXT,
+    user_proxy_port    INTEGER,
+    user_proxy_user    TEXT,
+    user_proxy_pass    TEXT
+);
+
+-- Folders are pure client-side organization — Telegram-style "Work / Family /
+-- All Chats" tabs above the chat list. Stored only on this device because
+-- folder taxonomy is intensely personal; we can sync via E2EE prefs later.
+CREATE TABLE IF NOT EXISTS folder (
+    id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name        TEXT    NOT NULL,
+    -- Lower number = leftward placement. Default 0; users reorder freely.
+    sort_order  INTEGER NOT NULL DEFAULT 0
+);
+
+-- Conv ↔ folder M:N. A chat can live in multiple folders; "All Chats" is
+-- implicit (no row required) so a fresh install renders identically to today.
+CREATE TABLE IF NOT EXISTS conversation_folder (
+    folder_id       INTEGER NOT NULL REFERENCES folder(id) ON DELETE CASCADE,
+    conversation_id TEXT    NOT NULL REFERENCES conversation(id) ON DELETE CASCADE,
+    PRIMARY KEY (folder_id, conversation_id)
+);
+
+CREATE INDEX IF NOT EXISTS conversation_folder_folder_idx
+    ON conversation_folder(folder_id);
+
+-- ── Conversations ───────────────────────────────────────────────────────────
+
+selectAllConversations:
+SELECT * FROM conversation
+WHERE is_archived = 0
+ORDER BY is_pinned DESC, last_message_time DESC;
+
+-- ── Folders ─────────────────────────────────────────────────────────────────
+
+selectAllFolders:
+SELECT * FROM folder ORDER BY sort_order ASC, id ASC;
+
+insertFolder:
+INSERT INTO folder(name, sort_order) VALUES (?, ?);
+
+renameFolder:
+UPDATE folder SET name = :name WHERE id = :id;
+
+deleteFolder:
+DELETE FROM folder WHERE id = :id;
+
+selectConversationsForFolder:
+SELECT c.* FROM conversation c
+  JOIN conversation_folder cf ON cf.conversation_id = c.id
+ WHERE cf.folder_id = :folderId AND c.is_archived = 0
+ ORDER BY c.is_pinned DESC, c.last_message_time DESC;
+
+addConvToFolder:
+INSERT OR IGNORE INTO conversation_folder(folder_id, conversation_id)
+VALUES (?, ?);
+
+removeConvFromFolder:
+DELETE FROM conversation_folder
+ WHERE folder_id = :folderId AND conversation_id = :convId;
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+selectArchivedConversations:
+SELECT * FROM conversation
+WHERE is_archived = 1
+ORDER BY last_message_time DESC;
+
+selectConversationById:
+SELECT * FROM conversation WHERE id = :id;
+
+upsertConversation:
+INSERT OR REPLACE INTO conversation(
+    id, type, display_name, peer_account_id, avatar_url,
+    last_message_preview, last_message_time, unread_count,
+    is_online, is_pinned, is_muted, is_archived, is_verified, member_ids_csv
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+setPinned:
+UPDATE conversation SET is_pinned = :pinned WHERE id = :id;
+
+setMuted:
+UPDATE conversation SET is_muted = :muted WHERE id = :id;
+
+setArchived:
+UPDATE conversation SET is_archived = :archived WHERE id = :id;
+
+setOnline:
+UPDATE conversation SET is_online = :online WHERE peer_account_id = :peerAccountId;
+
+setVerified:
+UPDATE conversation SET is_verified = :verified WHERE id = :id;
+
+-- ── Messages ────────────────────────────────────────────────────────────────
+
+selectMessagesByConv:
+SELECT * FROM message
+WHERE conversation_id = :convId
+ORDER BY sent_at ASC;
+
+insertMessage:
+INSERT OR REPLACE INTO message(
+    id, conversation_id, sender_id, plaintext_cache, ciphertext,
+    sent_at, delivered, read_at, expires_at, reply_to, edited_at, forwarded_from, pinned
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+setMessagePinned:
+UPDATE message SET pinned = :pinned WHERE id = :id;
+
+selectPinnedForConv:
+SELECT * FROM message
+ WHERE conversation_id = :convId AND pinned = 1
+ ORDER BY sent_at ASC;
+
+editMessage:
+UPDATE message
+   SET plaintext_cache = :plaintext,
+       ciphertext      = :ciphertext,
+       edited_at       = :editedAt
+ WHERE id = :id;
+
+markDelivered:
+UPDATE message SET delivered = 1 WHERE id = :id;
+
+markRead:
+UPDATE message SET read_at = :readAt WHERE id = :id;
+
+deleteMessage:
+DELETE FROM message WHERE id = :id;
+
+deleteExpired:
+DELETE FROM message WHERE expires_at IS NOT NULL AND expires_at < :now;
+
+-- ── Reactions ───────────────────────────────────────────────────────────────
+
+selectReactionsForMessages:
+SELECT message_id, actor_id, emoji, reacted_at
+  FROM message_reaction
+ WHERE message_id IN ?
+ ORDER BY reacted_at ASC;
+
+selectReactionsForConv:
+SELECT * FROM message_reaction
+ WHERE message_id IN (SELECT id FROM message WHERE conversation_id = :convId)
+ ORDER BY reacted_at ASC;
+
+upsertReaction:
+INSERT OR REPLACE INTO message_reaction(message_id, actor_id, emoji, reacted_at)
+VALUES (?, ?, ?, ?);
+
+deleteReaction:
+DELETE FROM message_reaction
+ WHERE message_id = :messageId AND actor_id = :actorId AND emoji = :emoji;
+
+deleteReactionsForMessage:
+DELETE FROM message_reaction WHERE message_id = :messageId;
+
+-- ── Session ─────────────────────────────────────────────────────────────────
+
+getSession:
+SELECT * FROM session WHERE id = 1;
+
+upsertSession:
+INSERT OR REPLACE INTO session(id, account_id, session_id, access_token, refresh_token, expires_at)
+VALUES (1, ?, ?, ?, ?, ?);
+
+clearSession:
+DELETE FROM session WHERE id = 1;
+
+-- ── Seed phrase ─────────────────────────────────────────────────────────────
+
+getSeedPhrase:
+SELECT ciphertext FROM seed_phrase WHERE id = 1;
+
+upsertSeedPhrase:
+INSERT OR REPLACE INTO seed_phrase(id, ciphertext) VALUES (1, ?);
+
+clearSeedPhrase:
+DELETE FROM seed_phrase WHERE id = 1;
+
+-- ── App preferences ─────────────────────────────────────────────────────────
+
+getPreferences:
+SELECT * FROM app_preferences WHERE id = 1;
+
+upsertPreferences:
+INSERT OR REPLACE INTO app_preferences(
+    id, privacy_preset, send_read_receipts, send_typing,
+    show_online_status, notif_preview, discoverable
+) VALUES (1, ?, ?, ?, ?, ?, ?);
+
+wipeAllConversations:
+DELETE FROM conversation;
+
+wipeAllMessages:
+DELETE FROM message;
+
+deleteMessagesByConv:
+DELETE FROM message WHERE conversation_id = :convId;
+
+vacuum:
+VACUUM;
+
+selectStorageBreakdown:
+SELECT
+    c.id                                                   AS id,
+    c.display_name                                         AS display_name,
+    c.peer_account_id                                      AS peer_account_id,
+    c.avatar_url                                           AS avatar_url,
+    CAST(COALESCE(COUNT(m.id), 0)               AS INTEGER) AS message_count,
+    CAST(COALESCE(SUM(LENGTH(m.ciphertext)), 0) AS INTEGER) AS bytes
+FROM conversation c
+LEFT JOIN message m ON m.conversation_id = c.id
+GROUP BY c.id, c.display_name, c.peer_account_id, c.avatar_url
+ORDER BY bytes DESC;
+
+countAllMessages:
+SELECT COUNT(*) FROM message;
+
+-- ── Auto-download ──────────────────────────────────────────────────────────
+
+getAutoDownload:
+SELECT * FROM auto_download WHERE id = 1;
+
+upsertAutoDownload:
+INSERT OR REPLACE INTO auto_download(id, photos, videos, video_max_mb, files, file_max_mb, voice)
+VALUES (1, ?, ?, ?, ?, ?, ?);
+
+-- ── Network stats ──────────────────────────────────────────────────────────
+
+getNetworkStats:
+SELECT * FROM network_stats WHERE id = 1;
+
+upsertNetworkStats:
+INSERT OR REPLACE INTO network_stats(id, sent_bytes, received_bytes, since_at)
+VALUES (1, ?, ?, ?);
+
+-- The SQLite dialect we ship on (3.18) predates ON CONFLICT DO UPDATE, so the
+-- repository implementation handles "ensure row + update" as two queries.
+ensureNetworkStatsRow:
+INSERT OR IGNORE INTO network_stats(id, sent_bytes, received_bytes, since_at)
+VALUES (1, 0, 0, :now);
+
+addNetworkSent:
+UPDATE network_stats SET sent_bytes = sent_bytes + :delta WHERE id = 1;
+
+addNetworkReceived:
+UPDATE network_stats SET received_bytes = received_bytes + :delta WHERE id = 1;
+
+resetNetworkStats:
+INSERT OR REPLACE INTO network_stats(id, sent_bytes, received_bytes, since_at)
+VALUES (1, 0, 0, ?);
+
+-- ── Network settings ───────────────────────────────────────────────────────
+
+getNetworkSettings:
+SELECT * FROM network_settings WHERE id = 1;
+
+upsertNetworkSettings:
+INSERT OR REPLACE INTO network_settings(id, tor_enabled, user_proxy_type, user_proxy_host, user_proxy_port, user_proxy_user, user_proxy_pass)
+VALUES (1, ?, ?, ?, ?, ?, ?);
+
+-- ── Crypto ──────────────────────────────────────────────────────────────────
+
+getIdentity:
+SELECT * FROM crypto_identity WHERE id = 1;
+
+upsertIdentity:
+INSERT OR REPLACE INTO crypto_identity(id, identity_key_pair, registration_id)
+VALUES (1, ?, ?);
+
+getSignedPrekey:
+SELECT * FROM crypto_signed_prekey ORDER BY id DESC LIMIT 1;
+
+upsertSignedPrekey:
+INSERT OR REPLACE INTO crypto_signed_prekey(id, public_key, private_key, signature)
+VALUES (?, ?, ?, ?);
+
+getKyberPrekey:
+SELECT * FROM crypto_kyber_prekey ORDER BY id DESC LIMIT 1;
+
+upsertKyberPrekey:
+INSERT OR REPLACE INTO crypto_kyber_prekey(id, serialized)
+VALUES (?, ?);
+
+clearCrypto:
+DELETE FROM crypto_identity;
+
+clearCryptoSignedPrekeys:
+DELETE FROM crypto_signed_prekey;
+
+clearCryptoKyberPrekeys:
+DELETE FROM crypto_kyber_prekey;

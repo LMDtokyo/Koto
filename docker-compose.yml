@@ -1,0 +1,242 @@
+services:
+  # ─── Infrastructure ────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: koto
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d koto"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  scylladb:
+    image: scylladb/scylla:6.2
+    command: --smp 2 --memory 1G --developer-mode 1 --overprovisioned 1
+    volumes:
+      - scylla_data:/var/lib/scylla
+    ports:
+      - "9042:9042"
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' 2>/dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.25.0
+    ulimits:
+      memlock: -1
+    environment:
+      DFLY_requirepass: ${DRAGONFLY_PASSWORD}
+    volumes:
+      - dragonfly_data:/data
+    # No host ports: Koto services reach dragonfly via the compose network; avoids clashing
+    # with another Redis/Dragonfly already bound to host :6379.
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${DRAGONFLY_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2.10-alpine
+    command: -js -m 8222 -sd /data
+    volumes:
+      - nats_data:/data
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── Application Services ──────────────────────────────────────────────────
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    ports:
+      # Host 8081: avoid clash with another API on 8080; inside the container still 8080/9080.
+      - "8081:8080"   # REST API (host)
+      - "9080:9080"   # WebSocket
+    environment:
+      AUTH_ADDR:          "http://auth:18001"
+      CHAT_ADDR:          "http://chat:18002"
+      USER_ADDR:          "http://user:18003"
+      MEDIA_ADDR:         "http://media:18005"
+      BOT_ADDR:           "http://bot:18006"
+      NOTIFICATION_ADDR:  "http://notification:18004"
+      MODERATION_ADDR:    "http://moderation:18007"
+      DRAGONFLY_ADDR:     "dragonfly:6379"
+      DRAGONFLY_PASSWORD: ${DRAGONFLY_PASSWORD}
+      JWT_PUBLIC_KEY:     ${JWT_PUBLIC_KEY}
+      NATS_URL:           "nats://nats:4222"
+      ALLOWED_ORIGIN:     ${ALLOWED_ORIGIN}
+      LOG_LEVEL:          "info"
+    depends_on:
+      auth:         { condition: service_started }
+      chat:         { condition: service_started }
+      user:         { condition: service_started }
+      notification: { condition: service_started }
+      dragonfly:    { condition: service_healthy }
+      nats:         { condition: service_healthy }
+    restart: unless-stopped
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    environment:
+      HTTP_ADDR:            ":18001"
+      POSTGRES_DSN:         "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/koto?sslmode=disable&pool_max_conns=20"
+      DRAGONFLY_ADDR:       "dragonfly:6379"
+      DRAGONFLY_PASSWORD:   ${DRAGONFLY_PASSWORD}
+      JWT_PRIVATE_KEY_SEED: ${JWT_PRIVATE_KEY_SEED}
+      JWT_ACCESS_TTL:       "15m"
+      JWT_REFRESH_TTL:      "720h"
+      LOG_LEVEL:            "info"
+    depends_on:
+      postgres:  { condition: service_healthy }
+      dragonfly: { condition: service_healthy }
+    restart: unless-stopped
+
+  chat:
+    build:
+      context: .
+      dockerfile: services/chat/Dockerfile
+    environment:
+      HTTP_ADDR:          ":18002"
+      SCYLLA_HOSTS:       "scylladb:9042"
+      SCYLLA_KEYSPACE:    "koto"
+      NATS_URL:           "nats://nats:4222"
+      DRAGONFLY_ADDR:     "dragonfly:6379"
+      DRAGONFLY_PASSWORD: ${DRAGONFLY_PASSWORD}
+      JWT_PUBLIC_KEY:     ${JWT_PUBLIC_KEY}
+      LOG_LEVEL:          "info"
+    depends_on:
+      scylladb:  { condition: service_healthy }
+      nats:      { condition: service_healthy }
+      dragonfly: { condition: service_healthy }
+    restart: unless-stopped
+
+  user:
+    build:
+      context: .
+      dockerfile: services/user/Dockerfile
+    environment:
+      HTTP_ADDR:          ":18003"
+      POSTGRES_DSN:       "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/koto?sslmode=disable&pool_max_conns=20"
+      DRAGONFLY_ADDR:     "dragonfly:6379"
+      DRAGONFLY_PASSWORD: ${DRAGONFLY_PASSWORD}
+      JWT_PUBLIC_KEY:     ${JWT_PUBLIC_KEY}
+      LOG_LEVEL:          "info"
+    depends_on:
+      postgres:  { condition: service_healthy }
+      dragonfly: { condition: service_healthy }
+    restart: unless-stopped
+
+  notification:
+    build:
+      context: .
+      dockerfile: services/notification/Dockerfile
+    environment:
+      HTTP_ADDR:          ":18004"
+      POSTGRES_DSN:       "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/koto?sslmode=disable&pool_max_conns=10"
+      NATS_URL:           "nats://nats:4222"
+      APNS_KEY_PATH:      ${APNS_KEY_PATH}
+      APNS_KEY_ID:        ${APNS_KEY_ID}
+      APNS_TEAM_ID:       ${APNS_TEAM_ID}
+      APNS_BUNDLE_ID:     ${APNS_BUNDLE_ID}
+      APNS_PRODUCTION:    "false"
+      LOG_LEVEL:          "info"
+    depends_on:
+      postgres: { condition: service_healthy }
+      nats:     { condition: service_healthy }
+    restart: unless-stopped
+
+  media:
+    build:
+      context: .
+      dockerfile: services/media/Dockerfile
+    environment:
+      HTTP_ADDR:          ":18005"
+      POSTGRES_DSN:       "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/koto?sslmode=disable&pool_max_conns=10"
+      MINIO_ENDPOINT:        "minio:9000"
+      # Host portion mobile clients use when PUTting/GETting presigned URLs.
+      # For Android emulator, 10.0.2.2 forwards to the host machine's 9000.
+      # For production, set to your public MinIO/S3 gateway (e.g. media.koto.run).
+      MINIO_PUBLIC_ENDPOINT: "${MINIO_PUBLIC_ENDPOINT:-10.0.2.2:9000}"
+      MINIO_PUBLIC_USE_SSL:  "${MINIO_PUBLIC_USE_SSL:-false}"
+      MINIO_ACCESS_KEY:      ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY:      ${MINIO_SECRET_KEY}
+      MINIO_BUCKET:          "koto-media"
+      MINIO_USE_SSL:         "false"
+      JWT_PUBLIC_KEY:     ${JWT_PUBLIC_KEY}
+      LOG_LEVEL:          "info"
+    depends_on:
+      postgres: { condition: service_healthy }
+      minio:    { condition: service_healthy }
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: .
+      dockerfile: services/bot/Dockerfile
+    environment:
+      HTTP_ADDR:          ":18006"
+      POSTGRES_DSN:       "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/koto?sslmode=disable&pool_max_conns=10"
+      NATS_URL:           "nats://nats:4222"
+      JWT_PUBLIC_KEY:     ${JWT_PUBLIC_KEY}
+      INTERNAL_SECRET:    ${INTERNAL_SECRET}
+      LOG_LEVEL:          "info"
+    depends_on:
+      postgres: { condition: service_healthy }
+      nats:     { condition: service_healthy }
+    restart: unless-stopped
+
+  moderation:
+    build:
+      context: .
+      dockerfile: services/moderation/Dockerfile
+    environment:
+      HTTP_ADDR:     ":18007"
+      POSTGRES_DSN:  "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/koto?sslmode=disable&pool_max_conns=10"
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LOG_LEVEL:     "info"
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  scylla_data:
+  dragonfly_data:
+  nats_data:
+  minio_data:

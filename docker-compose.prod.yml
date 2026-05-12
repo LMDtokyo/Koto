@@ -1,0 +1,74 @@
+# Production overrides: запускать как
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
+#
+# Что отличается от dev:
+#   - Никаких host-портов у инфраструктурных сервисов (postgres, scylla, dragonfly, nats, minio).
+#     Доступ только из compose-сети. Caddy внешний.
+#   - Gateway не публикует свои порты наружу — Caddy проксирует на api.koto.run / ws.koto.run.
+#   - Все сервисы ставят `restart: always`.
+#   - Логи в JSON через docker default driver (Loki/Promtail позже опционально).
+#   - Healthcheck'и подкручены под реальный VPS (медленнее старт scylla на 4 GB машине).
+
+services:
+  postgres:
+    ports: !reset []
+    restart: always
+
+  scylladb:
+    ports: !reset []
+    restart: always
+    healthcheck:
+      start_period: 120s
+
+  dragonfly:
+    restart: always
+
+  nats:
+    ports: !reset []
+    restart: always
+
+  minio:
+    ports: !reset []
+    restart: always
+
+  gateway:
+    ports: !reset []
+    environment:
+      LOG_LEVEL: "info"
+    restart: always
+
+  auth:
+    restart: always
+  chat:
+    restart: always
+  user:
+    restart: always
+  notification:
+    restart: always
+  media:
+    restart: always
+  bot:
+    restart: always
+
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      gateway:
+        condition: service_started
+      minio:
+        condition: service_healthy
+    networks:
+      default: {}
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,95 @@
+[versions]
+agp                  = "8.9.2"
+kotlin               = "2.1.20"
+ksp                  = "2.1.20-1.0.32"
+composeBom           = "2026.03.01"
+coreKtx              = "1.16.0"
+lifecycleRuntime     = "2.9.0"
+activityCompose      = "1.10.1"
+navigation           = "2.9.0"
+hilt                 = "2.56"
+hiltNavigation       = "1.2.0"
+room                 = "2.7.1"
+datastore            = "1.1.4"
+retrofit             = "2.11.0"
+okhttp               = "4.12.0"
+coil                 = "3.1.0"
+coroutines           = "1.10.1"
+serialization        = "1.8.1"
+splashscreen         = "1.0.1"
+biometric            = "1.1.0"
+appcompat            = "1.7.0"
+bouncycastle         = "1.79"
+kotlinxCollectionsImmutable = "0.4.0"
+torAndroidBinary = "0.4.8.14"
+
+[libraries]
+# AndroidX Core
+androidx-core-ktx              = { group = "androidx.core",         name = "core-ktx",               version.ref = "coreKtx" }
+androidx-lifecycle-runtime     = { group = "androidx.lifecycle",    name = "lifecycle-runtime-ktx",  version.ref = "lifecycleRuntime" }
+androidx-lifecycle-viewmodel   = { group = "androidx.lifecycle",    name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntime" }
+androidx-activity-compose      = { group = "androidx.activity",     name = "activity-compose",       version.ref = "activityCompose" }
+androidx-splashscreen          = { group = "androidx.core",         name = "core-splashscreen",      version.ref = "splashscreen" }
+androidx-biometric             = { group = "androidx.biometric",    name = "biometric",              version.ref = "biometric" }
+androidx-appcompat             = { group = "androidx.appcompat",    name = "appcompat",              version.ref = "appcompat" }
+androidx-lifecycle-process    = { group = "androidx.lifecycle",    name = "lifecycle-process",      version.ref = "lifecycleRuntime" }
+
+# Compose BOM
+compose-bom                    = { group = "androidx.compose",      name = "compose-bom",            version.ref = "composeBom" }
+compose-ui                     = { group = "androidx.compose.ui",   name = "ui" }
+compose-ui-graphics            = { group = "androidx.compose.ui",   name = "ui-graphics" }
+compose-ui-tooling-preview     = { group = "androidx.compose.ui",   name = "ui-tooling-preview" }
+compose-material3              = { group = "androidx.compose.material3", name = "material3" }
+compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+compose-animation              = { group = "androidx.compose.animation", name = "animation" }
+compose-foundation             = { group = "androidx.compose.foundation", name = "foundation" }
+compose-ui-tooling             = { group = "androidx.compose.ui",   name = "ui-tooling" }
+
+# Navigation
+navigation-compose             = { group = "androidx.navigation",   name = "navigation-compose",     version.ref = "navigation" }
+
+# Hilt
+hilt-android                   = { group = "com.google.dagger",     name = "hilt-android",           version.ref = "hilt" }
+hilt-compiler                  = { group = "com.google.dagger",     name = "hilt-android-compiler",  version.ref = "hilt" }
+hilt-navigation-compose        = { group = "androidx.hilt",         name = "hilt-navigation-compose", version.ref = "hiltNavigation" }
+
+# Room
+room-runtime                   = { group = "androidx.room",         name = "room-runtime",           version.ref = "room" }
+room-ktx                       = { group = "androidx.room",         name = "room-ktx",               version.ref = "room" }
+room-compiler                  = { group = "androidx.room",         name = "room-compiler",          version.ref = "room" }
+
+# DataStore
+datastore-preferences          = { group = "androidx.datastore",    name = "datastore-preferences",  version.ref = "datastore" }
+
+# Network
+retrofit                       = { group = "com.squareup.retrofit2", name = "retrofit",              version.ref = "retrofit" }
+retrofit-gson                  = { group = "com.squareup.retrofit2", name = "converter-gson",        version.ref = "retrofit" }
+okhttp                         = { group = "com.squareup.okhttp3",  name = "okhttp",                 version.ref = "okhttp" }
+okhttp-logging                 = { group = "com.squareup.okhttp3",  name = "logging-interceptor",    version.ref = "okhttp" }
+
+# Coil (image loading)
+coil-compose                   = { group = "io.coil-kt.coil3",      name = "coil-compose",           version.ref = "coil" }
+coil-network-okhttp            = { group = "io.coil-kt.coil3",      name = "coil-network-okhttp",    version.ref = "coil" }
+
+# Coroutines
+coroutines-android             = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# Serialization
+serialization-json             = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+
+# Cryptography (Signal Protocol primitives)
+bouncycastle                   = { group = "org.bouncycastle",      name = "bcprov-jdk18on",         version.ref = "bouncycastle" }
+
+# Collections
+kotlinx-collections-immutable  = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
+
+# Embedded Tor binary (Guardian Project)
+tor-android-binary             = { group = "info.guardianproject",     name = "tor-android-binary",     version.ref = "torAndroidBinary" }
+
+[plugins]
+android-application  = { id = "com.android.application",          version.ref = "agp" }
+kotlin-android       = { id = "org.jetbrains.kotlin.android",      version.ref = "kotlin" }
+kotlin-compose       = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+hilt                 = { id = "com.google.dagger.hilt.android",    version.ref = "hilt" }
+ksp                  = { id = "com.google.devtools.ksp",           version.ref = "ksp" }

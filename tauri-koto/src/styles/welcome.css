@@ -1,0 +1,86 @@
+/* Desktop `WelcomePane.kt` — пустое состояние главной панели */
+
+/* WelcomePane.kt: widthIn max 400dp, padding horizontal 32dp, центр по вертикали */
+.welcome {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-11) var(--space-13);
+  background: var(--color-bg);
+}
+
+.welcome__inner {
+  max-width: var(--content-welcome-pane);
+  width: 100%;
+  text-align: center;
+}
+
+.welcome__mark {
+  display: block;
+  margin: 0 auto;
+  width: 192px;
+  height: 192px;
+  border-radius: var(--radius-tile-welcome);
+  object-fit: contain;
+  filter: drop-shadow(0 16px 48px color-mix(in srgb, var(--color-accent) 28%, transparent));
+}
+
+.welcome__headline {
+  margin: var(--space-12) 0 0;
+  font-size: var(--type-headline-small-size);
+  line-height: var(--type-headline-small-lh);
+  font-weight: 700;
+  letter-spacing: var(--type-headline-small-ls);
+  color: var(--color-text);
+}
+
+.welcome__body {
+  margin: var(--space-5) 0 0;
+  font-size: var(--type-body-medium-size);
+  line-height: var(--type-body-medium-lh);
+  letter-spacing: -0.01em;
+  color: var(--color-text-secondary);
+}
+
+/* Пустое состояние раздела «Друзья» в главной колонке */
+.friends-home {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-11) var(--space-13);
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    color-mix(in srgb, var(--color-accent) 12%, transparent),
+    transparent 55%
+  );
+}
+
+.friends-home__inner {
+  max-width: min(400px, 100%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.friends-home__title {
+  margin: 0;
+  font-size: var(--type-headline-small-size);
+  line-height: var(--type-headline-small-lh);
+  font-weight: 700;
+  letter-spacing: var(--type-headline-small-ls);
+  color: var(--color-text);
+}
+
+.friends-home__body {
+  margin: 0;
+  font-size: var(--type-body-medium-size);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--color-text-secondary);
+}

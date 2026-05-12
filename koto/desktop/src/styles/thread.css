@@ -1,0 +1,873 @@
+/* Desktop `ConversationScreen` + `ConversationHeader` + composer (визуально 1:1) */
+
+.thread {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.thread-messages-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* Ровный TG-фон без радиальных градиентов; тон чуть теплее основного bg */
+  background: color-mix(in srgb, var(--color-bg) 96%, var(--color-accent) 4%);
+}
+
+:root[data-theme="light"] .thread-messages-area {
+  background: var(--color-bg);
+}
+
+/* ConversationHeader — высота 60dp, padding 16dp */
+.thread-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 60px;
+  padding: 0 var(--space-4) 0 var(--space-6);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-separator);
+}
+
+.thread-header__peer {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+}
+
+.thread-header__peer:hover {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.thread-header__peer:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.thread-header__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+  position: relative;
+  background: var(--thread-av-bg, var(--color-muted));
+}
+
+.thread-header__avatar--online::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--color-success);
+  border: 2px solid var(--color-bg);
+}
+
+.thread-header__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.thread-header__title {
+  font-size: var(--type-title-small-size);
+  line-height: var(--type-title-small-lh);
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thread-header__subtitle {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--type-label-medium-size);
+  line-height: var(--type-label-medium-lh);
+  font-weight: 500;
+  letter-spacing: 0.017em;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thread-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.thread-header__icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  opacity: 0.5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thread-header__icon-btn--live {
+  opacity: 1;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.thread-header__icon-btn--live:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-accent);
+}
+
+.thread-header__icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* PinnedBar.kt — полоса закреплённого сообщения */
+.thread-pinned-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-separator);
+  cursor: pointer;
+}
+
+.thread-pinned-bar[hidden] {
+  display: none !important;
+}
+
+.thread-inline-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--color-separator);
+  background: var(--color-surface);
+}
+
+.thread-inline-search[hidden] {
+  display: none !important;
+}
+
+.thread-inline-search__input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--color-separator);
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: 8px 10px;
+}
+
+.thread-inline-search__count {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.thread-inline-search__close {
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.thread-msg__body--match {
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+
+.thread-pinned-bar__stripe {
+  width: 3px;
+  height: 32px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.thread-pinned-bar__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.thread-pinned-bar__label {
+  font-size: var(--type-label-small-size);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.thread-pinned-bar__preview {
+  font-size: var(--type-body-medium-size);
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thread-pinned-bar__unpin {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.thread-pinned-bar__unpin:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-accent);
+}
+
+.thread__status {
+  flex-shrink: 0;
+  margin: 0;
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--type-label-medium-size);
+  color: var(--color-text-secondary);
+}
+
+.thread__messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-7) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-text) 14%, transparent) transparent;
+}
+
+.thread__messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.thread__messages::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-text) 14%, transparent);
+  border-radius: 4px;
+}
+
+.thread__messages::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text) 22%, transparent);
+}
+
+/* Группировка сообщений: соседние от одного отправителя — компактнее, новый автор — пропуск */
+.thread-msg-wrap + .thread-msg-wrap--self,
+.thread-msg-wrap--self + .thread-msg-wrap:not(.thread-msg-wrap--self) {
+  margin-top: var(--space-4);
+}
+
+/* Session-pattern: горизонтальная полоса + caps-текст «непрочитанные ниже».
+   Появляется один раз между read и unread сообщениями. */
+.thread-last-seen {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 360px;
+  margin: 28px auto 24px;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.thread-last-seen__bar {
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+.thread-last-seen__text {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-soft);
+  white-space: nowrap;
+}
+
+.thread-history-sentinel {
+  flex-shrink: 0;
+  height: 1px;
+  width: 100%;
+  margin: calc(-1 * var(--space-5)) 0 0;
+  pointer-events: none;
+}
+
+.thread-history-hint {
+  flex-shrink: 0;
+  align-self: center;
+  margin: var(--space-3) 0;
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--type-label-small-size);
+  color: var(--color-text-tertiary);
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  cursor: pointer;
+}
+
+.thread-history-hint:hover {
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+
+.thread-history-hint:disabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+.thread-msg-wrap {
+  display: flex;
+  width: 100%;
+}
+
+.thread-msg-wrap--self {
+  justify-content: flex-end;
+}
+
+/* Session-style: peer = плотный плоский bubble, self = accent fill */
+.thread-msg {
+  max-width: 70%;
+  align-self: flex-start;
+  padding: 9px 14px 8px;
+  border-radius: 18px 18px 18px 6px;
+  background: var(--color-bubble-peer);
+  color: var(--color-on-bubble-peer);
+  border: none;
+  box-shadow: var(--shadow-bubble);
+  position: relative;
+}
+
+.thread-msg--self {
+  align-self: flex-end;
+  border-radius: 18px 18px 6px 18px;
+  background: var(--color-bubble-self);
+  color: var(--color-on-bubble-self);
+  border-color: transparent;
+}
+
+.thread-msg__bubble {
+  border-radius: inherit;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.thread-msg__reply-quote {
+  margin: 2px 0 6px;
+  padding: 4px 8px;
+  border-left: 2.5px solid var(--color-accent-soft);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+}
+
+.thread-msg--self .thread-msg__reply-quote {
+  border-left-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.thread-msg__reply-quote strong {
+  display: block;
+  font-weight: 600;
+  color: var(--color-accent-soft);
+  margin-bottom: 1px;
+  font-size: 12px;
+}
+
+.thread-msg--self .thread-msg__reply-quote strong {
+  color: #ffffff;
+}
+
+.thread-msg__actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.thread-msg:hover .thread-msg__actions,
+.thread-msg:focus-within .thread-msg__actions {
+  opacity: 1;
+}
+
+.thread-msg__reply-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-bg) 55%, transparent);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thread-msg__reply-btn:hover {
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+/* TG-style: время + checks плавающим блоком в правом-нижнем углу bubble.
+   Body имеет invisible-padding в конце последней строки, чтобы текст не лез под meta. */
+.thread-msg__meta {
+  align-self: flex-end;
+  margin-top: -16px;
+  margin-right: -4px;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--color-bubble-peer-meta);
+  font-family: var(--font-ui);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.thread-msg--self .thread-msg__meta {
+  color: var(--color-bubble-self-meta);
+}
+
+.thread-msg__check {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.thread-msg__body {
+  font-size: var(--type-bubble-size);
+  line-height: var(--type-bubble-lh);
+  letter-spacing: -0.005em;
+  color: var(--color-on-bubble-peer);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.thread-msg--self .thread-msg__body {
+  color: var(--color-on-bubble-self);
+}
+
+/* Резерв под float-meta: невидимый «спейсер» в конце текста */
+.thread-msg__body::after {
+  content: "";
+  display: inline-block;
+  width: 56px;
+  height: 0;
+}
+
+/* Composer — TG-style: единое скруглённое поле с inline-иконками + circular send */
+.thread-composer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--space-3) var(--space-6) var(--space-6);
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-separator);
+}
+
+.thread-composer-reply {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) 0 var(--space-4);
+  border-bottom: 1px solid var(--color-separator);
+}
+
+.thread-composer-reply[hidden] {
+  display: none !important;
+}
+
+.thread-composer-reply__stripe {
+  width: 3px;
+  height: 36px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.thread-composer-reply__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.thread-composer-reply__label {
+  font-size: var(--type-label-small-size);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.thread-composer-reply__snippet {
+  font-size: var(--type-body-medium-size);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thread-composer-reply__close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.thread-composer-reply__close:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-accent);
+}
+
+/* Session-row: [attach] [shell-text+emoji+ttl] [send] на одном уровне */
+.thread-composer__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* Контейнер для textarea + emoji/ttl справа */
+.thread-composer__field-shell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 4px 6px 4px 14px;
+  border-radius: 22px;
+  background: var(--color-surface);
+  border: 1.5px solid transparent;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.thread-composer__field-shell:focus-within {
+  background: var(--color-elevated);
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+/* Inline-иконки (attach, emoji, ttl) — прозрачные, в составе поля */
+.thread-composer__attach,
+.thread-composer__side {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  cursor: not-allowed;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background 0.14s ease, color 0.14s ease, opacity 0.14s ease;
+}
+
+.thread-composer__side--live,
+.thread-composer__attach--live {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.thread-composer__side--live:hover,
+.thread-composer__attach--live:hover {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  color: var(--color-accent-soft);
+}
+
+.thread-composer__attach svg {
+  width: 22px;
+  height: 22px;
+}
+
+.thread-composer__field {
+  flex: 1;
+  min-height: 36px;
+  max-height: 168px;
+  padding: 8px 4px;
+  border-radius: 18px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.005em;
+  color: var(--color-text);
+  outline: none;
+  resize: none;
+}
+
+.thread-composer__field::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.thread-composer__field:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Send / voice — самостоятельный круглый button справа от shell */
+.thread-composer__send {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  opacity: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s ease;
+}
+
+.thread-composer__send svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Mic по умолчанию, send — когда есть текст (через --active) */
+.thread-composer__send-icon {
+  position: absolute;
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.thread-composer__send {
+  position: relative;
+}
+
+.thread-composer__send-icon--send {
+  opacity: 0;
+  transform: scale(0.6) rotate(-30deg);
+}
+
+.thread-composer__send-icon--mic {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.thread-composer__send--active .thread-composer__send-icon--send {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.thread-composer__send--active .thread-composer__send-icon--mic {
+  opacity: 0;
+  transform: scale(0.6) rotate(30deg);
+}
+
+.thread-composer__send--active {
+  cursor: pointer;
+  color: #ffffff;
+  background: var(--color-accent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 38%, transparent);
+}
+
+.thread-composer__send--active:hover {
+  background: var(--color-accent-pressed);
+  filter: brightness(1.05);
+}
+
+.thread-composer__send--active:active {
+  transform: scale(0.94);
+}
+
+/* ── Reactions (Signal/TG-style chips под bubble) ─────────────────────────── */
+
+.thread-msg__reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.thread-msg__reactions[hidden] {
+  display: none !important;
+}
+
+.thread-msg__reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-text);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.14s ease, transform 0.12s ease, border-color 0.14s ease;
+  user-select: none;
+}
+
+.thread-msg__reaction:hover {
+  background: color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.thread-msg__reaction:active {
+  transform: scale(0.92);
+}
+
+.thread-msg__reaction--mine {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-text);
+}
+
+.thread-msg__reaction--mine:hover {
+  background: color-mix(in srgb, var(--color-accent) 26%, transparent);
+}
+
+.thread-msg__reaction-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.thread-msg__reaction-count {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Мягкое появление новой реакции — только для свежих чипсов
+   (не запускается при каждом ре-рендере, иначе UI «дёргается»). */
+@keyframes thread-reaction-pop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.thread-msg__reaction--new {
+  animation: thread-reaction-pop 0.16s ease-out;
+}
+
+/* ── Reaction picker (всплывает по клику на «реакция» в action menu) ──────── */
+
+.thread-reaction-picker {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 16px;
+  background: var(--color-elevated);
+  border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  z-index: 80;
+  max-width: 320px;
+  animation: thread-reaction-picker-in 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes thread-reaction-picker-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.thread-reaction-picker--extended {
+  border-radius: 14px;
+}
+
+.thread-reaction-picker__btn {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.1s ease;
+}
+
+.thread-reaction-picker__btn:hover {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  transform: scale(1.15);
+}
+
+.thread-reaction-picker__btn:active {
+  transform: scale(0.92);
+}
+
+.thread-reaction-picker__btn--more {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}

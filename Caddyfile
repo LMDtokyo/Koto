@@ -1,0 +1,94 @@
+# Caddy v2 — реверс-прокси перед Koto-стеком.
+#
+# Маршруты:
+#   api.koto.run   → REST gateway (HTTP/2, /v1/*)
+#   ws.koto.run    → WebSocket gateway (/ws)
+#   media.koto.run → MinIO public endpoint (presigned-URL hostname)
+#   koto.run       → редирект на лендинг (его поднимает другой агент)
+#
+# TLS — автоматический Let's Encrypt. Email берётся из CADDY_ACME_EMAIL.
+
+{
+	email {$CADDY_ACME_EMAIL}
+	# Включить admin endpoint только локально — для конфиг-релоада.
+	admin localhost:2019
+	servers {
+		protocols h1 h2 h3
+	}
+}
+
+# ── REST API ────────────────────────────────────────────────────────────────
+api.koto.run {
+	encode zstd gzip
+
+	# CORS только для нашего лендинга и web-клиента (если появится).
+	# Tauri-нативное приложение CORS не требует, но безопасный header не помешает.
+	@cors header Origin "https://koto.run"
+	header @cors {
+		Access-Control-Allow-Origin "https://koto.run"
+		Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+		Access-Control-Allow-Headers "Authorization, Content-Type, X-Account-ID"
+		Access-Control-Max-Age "600"
+	}
+
+	# Базовая защита.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		X-Frame-Options "DENY"
+		-Server
+	}
+
+	# Простой rate-limit заглушка через Caddy connect_policy (на VPS лучше fail2ban отдельно).
+	reverse_proxy gateway:8080 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		flush_interval -1
+	}
+}
+
+# ── WebSocket ───────────────────────────────────────────────────────────────
+ws.koto.run {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		-Server
+	}
+
+	# WebSocket требует HTTP/1.1 upstream + явный Upgrade header.
+	reverse_proxy gateway:9080 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		header_up Connection "Upgrade"
+		header_up Upgrade {http.request.header.Upgrade}
+		flush_interval -1
+		transport http {
+			versions h1
+		}
+	}
+}
+
+# ── MinIO (medi) — presigned upload/download ────────────────────────────────
+media.koto.run {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		-Server
+	}
+
+	reverse_proxy minio:9000 {
+		header_up Host {host}
+		# MinIO использует pre-signed URL c подписью HMAC-SHA256 — Caddy не должен трогать тело.
+	}
+}
+
+# ── Корневой редирект ──────────────────────────────────────────────────────
+koto.run, www.koto.run {
+	# Лендинг (statik) поднимется отдельным агентом. До этого — заглушка.
+	respond /health "ok"
+	redir https://github.com/{$KOTO_GITHUB_OWNER}/koto/releases/latest 302
+}

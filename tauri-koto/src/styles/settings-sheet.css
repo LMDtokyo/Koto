@@ -1,0 +1,283 @@
+/* Первый слой desktop SettingsScreen — только внешний вид (строки без логики подэкранов). */
+
+/* Модальный `#settings-overlay` удалён — настройки в main pane (`settings-sheet--in-pane`). */
+
+.settings-sheet {
+  width: min(440px, 100%);
+  max-height: calc(100vh - var(--chrome-height) - var(--space-11) * 2);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-separator);
+  background: var(--color-elevated);
+  box-shadow: var(--shadow-elevated);
+  overflow: hidden;
+}
+
+.settings-sheet--in-pane {
+  width: 100%;
+  max-height: none;
+  min-height: 100%;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  background: var(--color-bg);
+}
+
+button.settings-profile-card {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.settings-sheet__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-8) var(--space-5);
+  border-bottom: 1px solid var(--color-separator);
+}
+
+.settings-sheet__title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+}
+
+.settings-sheet__top-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.settings-sheet__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.settings-sheet__icon-btn:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text);
+}
+
+.settings-sheet__scroll {
+  padding: var(--space-6) 0 var(--space-8);
+  overflow-y: auto;
+}
+
+/* ── Карточка профиля (как ProfileCard, пока без перехода в подэкран) ── */
+.settings-profile-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin: 0 var(--space-8) var(--space-7);
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-separator);
+  background: var(--color-surface);
+  cursor: default;
+}
+
+.settings-profile-card__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--gradient-accent);
+  flex-shrink: 0;
+}
+
+.settings-profile-card__text {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.settings-profile-card__name {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.settings-profile-card__sub {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-profile-card__chev {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--color-text-tertiary);
+  line-height: 1;
+}
+
+/* ── Секции ── */
+.settings-section {
+  margin-bottom: var(--space-3);
+}
+
+.settings-section__label {
+  margin: 0;
+  padding: var(--space-5) var(--space-10) var(--space-3);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+/* ── Строка настроек (как SettingsRow) ── */
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--space-5) var(--space-10);
+  border: none;
+  border-bottom: 1px solid var(--color-separator);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--motion-theme);
+}
+
+.settings-row:first-of-type {
+  border-top: 1px solid var(--color-separator);
+}
+
+.settings-row:hover:not(:disabled):not(.settings-row--locked) {
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.settings-row--locked {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.52;
+}
+
+.settings-row:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.settings-row--danger:hover {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+}
+
+.settings-row__ic {
+  --row-ic: var(--color-muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--row-ic);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  flex-shrink: 0;
+}
+
+.settings-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-row__title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--color-text);
+}
+
+.settings-row__detail {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-row__detail--accent {
+  color: var(--color-accent);
+}
+
+.settings-row__chev {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--color-text-tertiary);
+  line-height: 1;
+}
+
+.settings-mono-inline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  word-break: break-all;
+  color: var(--color-text-secondary);
+}
+
+.settings-footnote {
+  margin: var(--space-9) var(--space-10) 0;
+  padding-top: var(--space-6);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+.settings-hint-box {
+  margin: var(--space-5) var(--space-8) 0;
+  padding: var(--space-6) var(--space-7);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-separator);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+}
+
+.settings-hint-box p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.settings-feedback {
+  min-height: 1.2em;
+  margin: var(--space-2) var(--space-10) var(--space-4);
+  font-size: 12px;
+  color: var(--color-success);
+}

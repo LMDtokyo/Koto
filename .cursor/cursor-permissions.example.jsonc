@@ -1,0 +1,60 @@
+// Скопируй в ~/.cursor/permissions.json
+// Документация: https://cursor.com/docs/reference/permissions
+//
+// Песочница (Docker-сокет, сеть для локального стека): см. .cursor/sandbox.json в репо
+// и при необходимости ~/.cursor/sandbox.json — https://cursor.com/docs/reference/sandbox
+//
+// ВАЖНО: allowlist работает только если в Cursor включён Auto-Run (Settings → Agent).
+// Если всё рано много запросов — поставь самый открытый режим Auto-Run («Run Everything»
+// или аналог в твоей версии): тогда агент реже тормозит на каждой команде.
+//
+// Сюда НЕ добавляем голый "sudo" и "rm" — любая команда после них выполнится без подтверждения.
+{
+  "mcpAllowlist": [
+    "context7:*",
+    "playwright:*"
+  ],
+  "terminalAllowlist": [
+    "git",
+    "npm",
+    "pnpm",
+    "yarn",
+    "npx",
+    "cargo",
+    "go",
+    "make",
+    "./gradlew",
+    "docker",
+    "curl",
+    "wget",
+    "tar",
+    "gzip",
+    "gunzip",
+    "unzip",
+    "pip",
+    "pip3",
+    "python3",
+    "python",
+    "rustup",
+    "rustc",
+    "sudo apt",
+    "sudo apt-get",
+    "sudo dpkg",
+    "rg",
+    "find",
+    "mkdir",
+    "cp",
+    "mv",
+    "touch",
+    "head",
+    "tail",
+    "cat",
+    "sed",
+    "grep",
+    "install",
+    "cmake",
+    "ninja",
+    "meson",
+    "pkg-config"
+  ]
+}

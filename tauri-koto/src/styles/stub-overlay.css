@@ -1,0 +1,72 @@
+/* Desktop PlaceholderScreen — короткий диалог «экран в переносе». */
+
+.stub-overlay {
+  z-index: 329;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-11);
+  background: color-mix(in srgb, var(--color-bg) 75%, black);
+  backdrop-filter: blur(8px);
+}
+
+.stub-overlay[hidden] {
+  display: none !important;
+}
+
+.stub-card {
+  width: min(400px, 100%);
+  padding: var(--space-11) var(--space-10);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-separator);
+  background: var(--color-elevated);
+  box-shadow: var(--shadow-elevated);
+  text-align: center;
+}
+
+.stub-card__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-7);
+  padding: var(--space-6);
+  border-radius: var(--radius-logo-tile);
+  background: var(--gradient-accent);
+}
+
+.stub-card__mark img {
+  display: block;
+  width: 36px;
+  height: 36px;
+}
+
+.stub-card__title {
+  margin: 0 0 var(--space-5);
+  font-size: var(--type-display-large-size);
+  line-height: var(--type-display-large-lh);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.stub-card__desc {
+  margin: 0 0 var(--space-9);
+  font-size: var(--type-body-medium-size);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.stub-card__btn {
+  padding: 11px 24px;
+  border-radius: 14px;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: var(--type-title-medium-size);
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  cursor: pointer;
+}
+
+.stub-card__btn:hover {
+  filter: brightness(1.06);
+}
